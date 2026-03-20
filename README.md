@@ -24,6 +24,7 @@ Schema 設計只是為了服務該負載的結果。
 |:--:|:--:|:--:|
 | Create Project | - | 2026-03-20 |
 | Add PostgreSQL | By Docker | 2026-03-20 |
+| 定義實驗流程 | - | 2026-03-20 |
 | Create OLTP DDL | 3NF | - |
 | Create OLAP DDL | Star Schema ... etc. | - |
 | 模擬即時數據腳本 | - | - |
@@ -31,7 +32,7 @@ Schema 設計只是為了服務該負載的結果。
 
 <br>
 
-### *B. Service List*
+### *B.　Service List*
 |**Service**|**Description**|**Port**|
 |:--:|:--:|:--:|
 | PostgreSQL | - | [5432](http:127.0.0.1:5432) |
@@ -39,7 +40,26 @@ Schema 設計只是為了服務該負載的結果。
 
 <br>
 
-### *C. OLTP VS OLAP VS HTAP*
+### *C. Diagram*
+```
+1. [Schema Design]
+    ↓
+2. [Data Generator]
+    ↓
+3. [OLTP Schema (3NF)]
+    ↓
+4. [ETL] # ETL : Extract → Transform → Load
+    ↓
+5. [OLAP Schema (Star Schema)]
+    ↓
+6. [Analytical Queries]
+    ↓
+7. [Benchmark & Metrics]
+```
+
+<br>
+
+### *D.　OLTP VS OLAP VS HTAP*
 | **Type** | **Core Objectives** | **Design Philosophy** | **Data Model** | **Query Features** |
 |:--:|:--:|:--:|:--:|:--:|
 | OLTP | 快速且正確地處理`交易` | 一致性優先 | 3NF 正規化 | 單筆查詢、低延遲 |
@@ -48,45 +68,40 @@ Schema 設計只是為了服務該負載的結果。
 
 <br>
 
-### *D.1. Define Table DDL*
-- #### *1. OLTP of DDL*
-  - #### *1.1. 1NF*
-  - #### *1.2. 2NF*
-  - #### *1.3. 3NF*
-- #### *2. OLAP of DDL*
-  - #### *2.1. Star Schema*
-    - #### *Fact Table*
-    - #### *Dimension Table*
-  - #### *2.2. Snowflake Schema*
-    - #### *Fact Table*
-    - #### *Dimension Table*
-    - #### *Sub-Dimension Table ... etc.*
-  - #### *2.3. Wide Table*
-
-### *D.2. Check List*
-- #### *1. OLTP of DDL ( 3NF )*
-  - #### 是否有主鍵 ? ( PK )
-  - #### 是否有外鍵 ? ( FK )
-  - #### 是否有 index ? ( PK / FK / 常用查詢條件 )
-  - #### 是否有 transaction ? ( ACID )
-  - #### 是否有適當的 normal form ? ( 1NF / 2NF / 3NF )
-  - #### 是否避免資料冗餘 ?
-- #### *2. OLAP of DDL*
-  - #### 是否有 fact table ?
-  - #### 是否有 dimension ?
-  - #### 是否避免複雜 join ?
-  - #### 是否支援時間分析 ?
-  - #### 是否能快速做 aggregation ?
-
-<br>
-
-### *E. Notice*
-- #### *若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
+### *E.　Notice*
+- #### *⭐ 欲真正解決 OLTP/OLAP 衝突，詳見[企業級解法](https://github.com/Junwu0615/OLTP-To-OLAP-Pipeline)*
+- #### *a. 若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
   - #### *優 : `限制權限`, `分開 Connection Pool`, `分開 Query Routing`*
   - #### *劣 : `CPU / IO 共用`，它們還是彼此搶資源*
-- #### *Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
+- #### *b. Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
   - #### *還是同一個 CPU*
   - #### *還是同一個 Disk*
   - #### *還是同一個 Buffer Cache*
-- #### *⭐ 欲真正解決 OLTP/OLAP 衝突，詳見[企業級解法](https://github.com/Junwu0615/OLTP-To-OLAP-Pipeline)*
-
+- #### *c. Define Table DDL*
+  - #### *1. OLTP of DDL*
+    - #### *1.1. 1NF*
+    - #### *1.2. 2NF*
+    - #### *1.3. 3NF*
+  - #### *2. OLAP of DDL*
+    - #### *2.1. Star Schema*
+      - #### *Fact Table*
+      - #### *Dimension Table*
+    - #### *2.2. Snowflake Schema*
+      - #### *Fact Table*
+      - #### *Dimension Table*
+      - #### *Sub-Dimension Table ... etc.*
+    - #### *2.3. Wide Table*
+- #### *d. Check Define Table List*
+  - #### *1. OLTP of DDL ( 3NF )*
+    - #### 是否有主鍵 ? ( PK )
+    - #### 是否有外鍵 ? ( FK )
+    - #### 是否有 index ? ( PK / FK / 常用查詢條件 )
+    - #### 是否有 transaction ? ( ACID )
+    - #### 是否有適當的 normal form ? ( 1NF / 2NF / 3NF )
+    - #### 是否避免資料冗餘 ?
+  - #### *2. OLAP of DDL*
+    - #### 是否有 fact table ?
+    - #### 是否有 dimension ?
+    - #### 是否避免複雜 join ?
+    - #### 是否支援時間分析 ?
+    - #### 是否能快速做 aggregation ?
