@@ -20,7 +20,7 @@ Simulating HTAP workload using a single PostgreSQL instance with schema isolatio
 | Create Project | - | 2026-03-20 |
 | Add PostgreSQL | By Docker | 2026-03-20 |
 | Create OLTP DDL | 3NF | - |
-| Create OLAP DDL | - | - |
+| Create OLAP DDL | Star Schema ... etc. | - |
 | 模擬即時數據腳本 | - | - |
 | 壓力測試 | - | - |
 
@@ -43,11 +43,26 @@ Simulating HTAP workload using a single PostgreSQL instance with schema isolatio
 
 <br>
 
-### *D. Notice*
+### *D. Define Table DDL*
+- #### *1. OLTP of DDL ( 3NF )*
+- #### *2. OLAP of DDL*
+  - #### *2.1. Star Schema*
+    - #### *Fact Table*
+    - #### *Dimension Table*
+  - #### *2.2. Snowflake Schema*
+    - #### *Fact Table*
+    - #### *Dimension Table*
+    - #### *Sub-Dimension Table ... etc.*
+
+<br>
+
+### *E. Notice*
 - #### *若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
-  - #### *優 : `限制權限`, `分開 connection pool`, `分開 query routing`*
-  - #### *劣 : `CPU / IO 還是共用`，它們還是彼此搶資源*
+  - #### *優 : `限制權限`, `分開 Connection Pool`, `分開 Query Routing`*
+  - #### *劣 : `CPU / IO 共用`，它們還是彼此搶資源*
 - #### *Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
   - #### *還是同一個 CPU*
   - #### *還是同一個 Disk*
   - #### *還是同一個 Buffer Cache*
+- #### *⭐ 欲真正解決 OLTP/OLAP 衝突，詳見[企業級解法](https://github.com/Junwu0615/OLTP-To-OLAP-Pipeline)*
+
