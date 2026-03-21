@@ -8,6 +8,28 @@
   | production_orders | 記錄生產訂單資訊，例如訂單編號、生產產品、目標產量、開始時間與結束時間。 | 生產排程與訂單管理 |
   | production_records | 記錄實際生產結果，例如某台機台在某時間段生產的產品與產量。 | 生產履歷資料 |
   | products | 儲存產品基本資訊，例如產品名稱、產品型號與規格。 | 產品主資料表 |
+
+```
+products
+   │
+   │ product_id
+   │
+   ▼
+production_orders
+   │
+   │ order_id
+   │
+   ▼
+production_records
+   ▲
+   │
+   │  machine_id
+   │
+machines ————▶ machine_events
+   │
+   └──────── machine_status_logs
+```
+
 - #### *OLAP*
   |**Name**|**Description**|**Remark**|
   |--:|:--:|:--:|
@@ -27,18 +49,22 @@
    ├── fact_machine_status
    └── fact_production
 
-  # ---------- Star Schema ---------- #
+  # ------------------------ Star Schema ------------------------ #
   
-               dim_machine
-                   │
-                   │
-  dim_time ── fact_machine_status
-                   │
-                   │
-               dim_product
-                   │
-                   │
-              fact_production
+                             dim_machine
+                                  │
+                                  │  machine_key
+                                  │  
+            time_key              ▼
+  dim_time ──────────▶ fact_machine_status
+                                  │
+                                  │
+                             dim_product
+                                  │
+                                  │  product_key
+                                  │
+                                  ▼
+                           fact_production
   ```
 
 <br>
