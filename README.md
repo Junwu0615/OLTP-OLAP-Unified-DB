@@ -46,7 +46,8 @@ Schema 設計只是為了服務該負載的結果。
 ### *B.1.　Service List*
 |**Service**|**Description**|**Port**|
 |:--:|:--:|:--:|
-| PostgreSQL | - | [5432](http:127.0.0.1:5432) |
+| PostgreSQL | for dev | [5432](http:127.0.0.1:5432) |
+| PostgreSQL | for Airflow | [5433](http:127.0.0.1:5433) |
 | PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
 | Airflow | - | [8080](http:127.0.0.1:8080) |
 

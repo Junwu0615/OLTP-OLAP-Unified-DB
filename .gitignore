@@ -7,3 +7,6 @@ docker/airflow/config
 docker/airflow/dags
 docker/airflow/logs
 docker/airflow/plugins
+docker/airflow/airflow.cfg
+docker/airflow/airflow-webserver.pid
+docker/airflow/webserver_config.py
