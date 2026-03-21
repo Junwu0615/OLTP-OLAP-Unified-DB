@@ -28,13 +28,17 @@ Schema 設計只是為了服務該負載的結果。
 | Define Event Story | - | 2026-03-21 |
 | Define Project Directory | - | 2026-03-21 |
 | Define Table DDL | - | 2026-03-21 |
-| Create OLTP DDL | 3NF | - |
-| Create OLAP DDL | Star Schema ... etc. | - |
-| Simulate Real-Time Data Script | - | - |
-| Single Insert | - | - |
-| Batch Insert | - | - |
+| Create OLTP DDL ( 6 ) | 3NF | 2026-03-21 |
+| SQL Script | create_partition.sql | 2026-03-21 |
+| Simulate Real-Time Data Script | - | 2026-03-21 |
+| Simulate Test Run | - | - |
+| Create OLAP DDL ( 5 ) | Star Schema | - |
+| OLTP to OLAP By ETL | - | - |
+| Analytical Queries | - | - |
+| Single to Batch Insert | - | - |
 | Multi-Instance Simulate | - | - |
-| Stress Test | - | - |
+| Benchmark | - | - |
+| Metrics | - | - |
 
 <br>
 
@@ -63,8 +67,6 @@ Schema 設計只是為了服務該負載的結果。
 7. [Benchmark & Metrics]
 ```
 
-<br>
-
 ### *C.2.　Event Description*
 ```
 # 待生成完整流程圖
@@ -76,9 +78,11 @@ Schema 設計只是為了服務該負載的結果。
   - 生產產出 ( 良品 / 不良品 )
 ```
 
-<br>
-
 ### *C.3.　[SQL Detail](./docs/sql.md)*
+
+### *C.4.　[Simulate Result](./docs/simulate.md)*
+
+### *C.5.　[Benchmark Result](./docs/benchmark.md)*
 
 <br>
 

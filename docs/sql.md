@@ -27,5 +27,46 @@ CREATE SCHEMA olap;
 ```
 ![PNG](../assets/create_schema.png)
 
+<br>
 
 ### *C.　Create Table*
+```
+oltp.products
+oltp.machines
+oltp.production_orders
+oltp.production_records
+oltp.machine_events
+oltp.machine_status_logs
+
+olap.dim_machine
+olap.dim_product
+olap.dim_time
+olap.fact_machine_status
+olap.fact_production
+```
+
+<br>
+
+### *D.　Index 加速查詢*
+```
+# 索引是透過「空間換取時間」，讓資料庫從漫無目的的搜尋，進化為有邏輯的快速定位。
+  # 創建目的: 為常見查詢模式服務
+  # 優: 大幅提升查詢效率，尤其在大量資料中；
+  # 缺: 會佔用額外儲存空間，且在寫入資料時可能會降低性能。
+ 
+# 有無 INDEX 差異對於查詢效率的影響 ( 1000 W rows )：
+  # 有: 直接定位 ( 0.02 s )
+  # 無: 掃描整個 partition ( 8 s )
+
+# 其他
+  # INDEX 定義順序有差
+    # 快: (machine_id, event_time) : 先定位 machine_id，再掃時間範圍
+    # 慢: (event_time, machine_id) : 先掃整段時間，再過濾 machine
+
+X -> oltp.products # product_id SERIAL PRIMARY KEY 已經建立
+idx_machines_line -> oltp.machines
+idx_orders_product -> oltp.production_orders
+idx_production_machine_time -> oltp.production_records
+idx_events_machine_time -> oltp.machine_events
+idx_status_machine_time -> oltp.machine_status_logs
+```

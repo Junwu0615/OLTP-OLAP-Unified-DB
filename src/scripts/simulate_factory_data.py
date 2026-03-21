@@ -1,84 +1,206 @@
 import psycopg2
 import random
-import time
 from datetime import datetime, timedelta
 
-# ===== DB 連線設定 =====
+# ===============================
+# DB Connection
+# ===============================
+
 conn = psycopg2.connect(
     host="localhost",
-    dbname="your_db",
-    user="your_user",
-    password="your_password"
+    database="factory",
+    user="postgres",
+    password="postgres"
 )
-conn.autocommit = True
+
 cursor = conn.cursor()
 
-# ===== 模擬參數 =====
-NUM_MACHINES = 5
-RUN_DURATION_SEC = 60  # 測試時間
-EVENT_INTERVAL = 0.1   # 每 0.1 秒產生一筆（約 10 TPS）
+# ===============================
+# Config
+# ===============================
 
-# ===== 狀態轉換機率（關鍵）=====
-STATE_TRANSITION = {
-    "RUNNING": ["RUNNING", "IDLE", "DOWN"],
-    "IDLE": ["RUNNING", "IDLE"],
-    "DOWN": ["IDLE", "DOWN"]
-}
+NUM_PRODUCTS = 5
+NUM_MACHINES = 20
+NUM_ORDERS = 30
+SIMULATION_HOURS = 24
 
-# ===== 初始狀態 =====
-machine_states = {
-    machine_id: random.choice(["RUNNING", "IDLE", "DOWN"])
-    for machine_id in range(1, NUM_MACHINES + 1)
-}
+STATUSES = ["RUNNING", "IDLE", "DOWN"]
+EVENT_TYPES = ["ERROR", "MAINTENANCE", "ALARM"]
 
-# ===== 寫入 function =====
-def insert_status_log(machine_id, status):
-    cursor.execute("""
-        INSERT INTO machine_status_logs (machine_id, status, event_time)
-        VALUES (%s, %s, %s)
-    """, (machine_id, status, datetime.now()))
+# ===============================
+# Generate Products
+# ===============================
 
-def insert_production(machine_id):
-    produced = random.randint(5, 20)
-    defect = int(produced * random.uniform(0.01, 0.05))
+def generate_products():
 
-    cursor.execute("""
-        INSERT INTO production_records (
-            machine_id, order_id, produced_qty, defect_qty, record_time
+    for i in range(NUM_PRODUCTS):
+        cursor.execute("""
+            INSERT INTO oltp.products (product_name, product_type)
+            VALUES (%s,%s)
+        """, (
+            f"Product-{i}",
+            random.choice(["A","B","C"])
+        ))
+
+    conn.commit()
+    print("products generated")
+
+
+# ===============================
+# Generate Machines
+# ===============================
+
+def generate_machines():
+
+    for i in range(NUM_MACHINES):
+
+        cursor.execute("""
+            INSERT INTO oltp.machines (machine_name, machine_type, line_no)
+            VALUES (%s,%s,%s)
+        """, (
+            f"Machine-{i}",
+            random.choice(["CNC","DRILL","LATHE"]),
+            f"L{random.randint(1,3)}"
+        ))
+
+    conn.commit()
+    print("machines generated")
+
+
+# ===============================
+# Generate Orders
+# ===============================
+
+def generate_orders():
+
+    for i in range(NUM_ORDERS):
+
+        start_time = datetime.now() - timedelta(hours=random.randint(1,48))
+        end_time = start_time + timedelta(hours=random.randint(1,5))
+
+        cursor.execute("""
+            INSERT INTO oltp.production_orders
+            (product_id, planned_quantity, start_time, end_time)
+            VALUES (%s,%s,%s,%s)
+        """, (
+            random.randint(1,NUM_PRODUCTS),
+            random.randint(100,500),
+            start_time,
+            end_time
+        ))
+
+    conn.commit()
+    print("orders generated")
+
+
+# ===============================
+# Generate Machine Status Logs
+# ===============================
+
+def generate_machine_status():
+
+    start_time = datetime.now() - timedelta(hours=SIMULATION_HOURS)
+
+    for machine_id in range(1, NUM_MACHINES + 1):
+
+        current_time = start_time
+
+        while current_time < datetime.now():
+
+            status = random.choices(
+                STATUSES,
+                weights=[0.7,0.2,0.1]
+            )[0]
+
+            cursor.execute("""
+                INSERT INTO oltp.machine_status_logs
+                (machine_id, status, event_time)
+                VALUES (%s,%s,%s)
+            """, (
+                machine_id,
+                status,
+                current_time
+            ))
+
+            current_time += timedelta(minutes=random.randint(1,5))
+
+    conn.commit()
+    print("machine status generated")
+
+
+# ===============================
+# Generate Production Records
+# ===============================
+
+def generate_production_records():
+
+    for _ in range(500):
+
+        event_time = datetime.now() - timedelta(
+            minutes=random.randint(0,1440)
         )
-        VALUES (%s, %s, %s, %s, %s)
-    """, (
-        machine_id,
-        random.randint(1, 10),  # 假設已有 orders
-        produced,
-        defect,
-        datetime.now()
-    ))
 
-# ===== 主模擬 loop =====
-def run_simulation():
-    start_time = time.time()
+        cursor.execute("""
+            INSERT INTO oltp.production_records
+            (order_id, machine_id, product_id, quantity, event_time)
+            VALUES (%s,%s,%s,%s,%s)
+        """, (
+            random.randint(1,NUM_ORDERS),
+            random.randint(1,NUM_MACHINES),
+            random.randint(1,NUM_PRODUCTS),
+            random.randint(1,10),
+            event_time
+        ))
 
-    while time.time() - start_time < RUN_DURATION_SEC:
-        for machine_id in machine_states.keys():
+    conn.commit()
+    print("production records generated")
 
-            # 狀態轉換
-            current_state = machine_states[machine_id]
-            next_state = random.choice(STATE_TRANSITION[current_state])
-            machine_states[machine_id] = next_state
 
-            # 寫入狀態 log（高頻）
-            insert_status_log(machine_id, next_state)
+# ===============================
+# Generate Machine Events
+# ===============================
 
-            # 如果在 RUNNING → 產生生產資料
-            if next_state == "RUNNING":
-                if random.random() < 0.7:  # 70% 機率產生
-                    insert_production(machine_id)
+def generate_machine_events():
 
-        time.sleep(EVENT_INTERVAL)
+    for _ in range(100):
 
-# ===== 執行 =====
+        event_time = datetime.now() - timedelta(
+            minutes=random.randint(0,1440)
+        )
+
+        cursor.execute("""
+            INSERT INTO oltp.machine_events
+            (machine_id, event_type, description, event_time)
+            VALUES (%s,%s,%s,%s)
+        """, (
+            random.randint(1,NUM_MACHINES),
+            random.choice(EVENT_TYPES),
+            "auto generated event",
+            event_time
+        ))
+
+    conn.commit()
+    print("machine events generated")
+
+
+# ===============================
+# MAIN
+# ===============================
+
+def main():
+
+    generate_products()
+    generate_machines()
+    generate_orders()
+    generate_machine_status()
+    generate_production_records()
+    generate_machine_events()
+
+    cursor.close()
+    conn.close()
+
+    print("simulation completed")
+
+
 if __name__ == "__main__":
-    print("Start simulation...")
-    run_simulation()
-    print("Done.")
+    main()

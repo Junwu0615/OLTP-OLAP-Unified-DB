@@ -1,8 +1,11 @@
-CREATE TABLE machine_events (
+CREATE TABLE oltp.machine_events (
     event_id BIGSERIAL PRIMARY KEY,
-    machine_id INT NOT NULL REFERENCES machines(machine_id),
-    event_type VARCHAR(50), -- ERROR / MAINTENANCE
-    severity INT,
+    machine_id INT REFERENCES oltp.machines(machine_id),
+    event_type VARCHAR(50),
     description TEXT,
     event_time TIMESTAMP NOT NULL
 );
+
+
+CREATE INDEX idx_events_machine_time
+ON oltp.machine_events(machine_id, event_time);

@@ -1,7 +1,11 @@
-CREATE TABLE machine_status_logs (
+CREATE TABLE oltp.machine_status_logs (
     log_id BIGSERIAL,
     machine_id INT NOT NULL,
-    status VARCHAR(20),
+    status VARCHAR(20) NOT NULL,
     event_time TIMESTAMP NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 ) PARTITION BY RANGE (event_time);
+
+
+CREATE INDEX idx_status_machine_time
+ON oltp.machine_status_logs(machine_id, event_time);

@@ -1,8 +1,11 @@
-CREATE TABLE machines (
+CREATE TABLE oltp.machines (
     machine_id SERIAL PRIMARY KEY,
-    machine_code VARCHAR(50) UNIQUE NOT NULL,
-    machine_type VARCHAR(50) NOT NULL,
-    location VARCHAR(100),
-    status VARCHAR(20) NOT NULL, -- RUNNING / IDLE / DOWN
+    machine_name VARCHAR(100) NOT NULL,
+    machine_type VARCHAR(50),
+    line_no VARCHAR(20),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+
+CREATE INDEX idx_machines_line
+ON oltp.machines(line_no);
