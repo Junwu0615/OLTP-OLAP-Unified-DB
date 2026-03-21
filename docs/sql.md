@@ -1,4 +1,4 @@
-### *A.　Table Description*
+### *A.1.　Table Description*
 - #### *OLTP*
   |**Name**|**Description**|**Remark**|
   |--:|:--:|:--:|
@@ -17,7 +17,36 @@
   | fact_machine_status | 機台狀態事實表，記錄機台在各時間點的運行狀態統計資料，例如運行時間、停機時間等。 | Fact Table |
   | fact_production | 生產事實表，記錄機台生產產品的統計資料，例如產量、生產時間等。 | Fact Table |
 
-
+### *A.2.　Table Description*
+- #### *a.　Define Table DDL*
+  - #### *1.　OLTP*
+    - #### *1.1.　1NF*
+    - #### *1.2.　2NF*
+    - #### *1.3.　3NF*
+  - #### *2.　OLAP*
+    - #### *2.1.　Star Schema*
+      - #### *Fact Table*
+      - #### *Dimension Table*
+    - #### *2.2.　Snowflake Schema*
+      - #### *Fact Table*
+      - #### *Dimension Table*
+      - #### *Sub-Dimension Table ... etc.*
+    - #### *2.3.　Wide Table*
+- #### *b.　Check Define Table List*
+  - #### *1.　OLTP*
+    - #### *是否有主鍵 ? ( PK ) 唯一識別一筆資料*
+    - #### *是否有外鍵 ? ( FK ) 強制資料一致*
+    - #### *是否有 index ? ( PK / FK / 常用查詢條件 )*
+    - #### *是否有 transaction ? ( ACID )*
+    - #### *是否有適當的 normal form ? ( 1NF / 2NF / 3NF )*
+    - #### *是否避免資料冗餘 ?*
+  - #### *2.　OLAP*
+    - #### *是否有 fact table ?*
+    - #### *是否有 dimension ?*
+    - #### *是否避免複雜 join ?*
+    - #### *是否支援時間分析 ?*
+    - #### *是否能快速做 aggregation ?*
+    
 <br>
 
 ### *B.　Settings Schema Mode*
