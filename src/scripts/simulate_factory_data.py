@@ -1,5 +1,4 @@
-import psycopg2
-import random
+import random, psycopg2
 from datetime import datetime, timedelta
 
 # ===============================
