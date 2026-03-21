@@ -31,6 +31,7 @@ Schema 設計只是為了服務該負載的結果。
 | Create OLTP DDL ( 6 ) | 3NF | 2026-03-21 |
 | SQL Script | create_partition.sql | 2026-03-21 |
 | Simulate Real-Time Data Script | - | 2026-03-21 |
+| Add Airflow | By Docker | 2026-03-21 |
 | Simulate Test Run | - | - |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | OLTP to OLAP By ETL | - | - |
