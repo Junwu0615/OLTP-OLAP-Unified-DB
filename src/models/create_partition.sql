@@ -1,9 +1,26 @@
-$$START_TIME = '2026-04-01';
-$$END_TIME = '2026-05-01';
-$$LOG_TABLE_NAME = 'machine_status_logs_2026_04';
-$$TARGET_TABLE_NAME = 'machine_status_logs';
-$$SCHEMA_NAME = 'oltp';
+DO $$
+DECLARE
+    start_time DATE;
+    end_time DATE;
+    schema_mode TEXT;
+    table_name TEXT;
+    target_name TEXT;
+BEGIN
+    schema_mode := 'oltp' || '.';
+    target_name := schema_mode || 'machine_status_logs';
 
-CREATE TABLE $$SCHEMA_NAME.$$LOG_TABLE_NAME
-PARTITION OF $$SCHEMA_NAME.$$TARGET_TABLE_NAME
-FOR VALUES FROM ($$START_TIME) TO ($$END_TIME);
+    start_time := date_trunc('month', CURRENT_DATE + interval '1 month');
+    end_time := start_time + interval '1 month';
+    table_name := target_name || '_' || to_char(start_time, 'YYYY_MM');
+
+    EXECUTE format(
+        'CREATE TABLE IF NOT EXISTS %I
+        PARTITION OF %I
+        FOR VALUES FROM (%L) TO (%L)',
+        table_name,
+        target_name,
+        start_time,
+        end_time
+    );
+
+END $$;

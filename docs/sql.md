@@ -62,6 +62,10 @@ olap.fact_production
   # INDEX 定義順序有差
     # 快: (machine_id, event_time) : 先定位 machine_id，再掃時間範圍
     # 慢: (event_time, machine_id) : 先掃整段時間，再過濾 machine
+  # 拆分區間
+    # 按日: metadata overhead
+    # 按月是最折衷作法
+    # 按年: table 太大
 
 X -> oltp.products # product_id SERIAL PRIMARY KEY 已經建立
 idx_machines_line -> oltp.machines
