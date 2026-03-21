@@ -9,26 +9,26 @@
   | production_records | 記錄實際生產結果，例如某台機台在某時間段生產的產品與產量。 | 生產履歷資料 |
   | products | 儲存產品基本資訊，例如產品名稱、產品型號與規格。 | 產品主資料表 |
 
-```
-products
-   │
-   │ product_id
-   │
-   ▼
-production_orders
-   │
-   │ order_id
-   │
-   ▼
-production_records
-   ▲
-   │
-   │  machine_id
-   │
-machines ————▶ machine_events
-   │
-   └──────── machine_status_logs
-```
+  ```
+  products
+     │
+     │ product_id
+     │
+     ▼
+  production_orders
+     │
+     │ order_id
+     │
+     ▼
+  production_records
+     ▲
+     │
+     │  machine_id
+     │
+  machines ————▶ machine_events
+     │
+     └──────── machine_status_logs
+  ```
 
 - #### *OLAP*
   |**Name**|**Description**|**Remark**|
