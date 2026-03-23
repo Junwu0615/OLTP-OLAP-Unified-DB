@@ -110,56 +110,228 @@ CREATE SCHEMA IF NOT EXISTS olap;
 
 <br>
 
-### *C.　Create Table*
-```
-oltp.machine_events
-oltp.machine_status_logs
-oltp.machines
-oltp.production_orders
-oltp.production_records
-oltp.products
+### *C.　權限設置*
+| 角色層級 | 帳號 | 核心能力 | 風險程度 |
+| :--: | :--: | :--: | :--: |
+| super user | `postgres` | 修改系統配置、建立資料庫 | 🔴 極高 ( 僅限維護 ) |
+| owner | `oltp_owner` / `olap_owner` | 建立/刪除表格、修改欄位 | 🟡 中 ( 僅限部署 ) |
+| user | `oltp_user` / `olap_user` | 讀取/寫入/修改資料內容 | 🟢 低 ( 日常運行 ) |
 
-olap.dim_machine
-olap.dim_product
-olap.dim_time
-olap.fact_machine_status
-olap.fact_production
-```
-![PNG](../assets/all_table.png)
+- ### *C.1.　Create Role*
+  - #### *C.1.1.　OLTP Role*
+    ```
+    # oltp_owner: 擁有者權限
+    CREATE ROLE oltp_owner NOLOGIN;
+    
+    # oltp_user: 讀/寫權限
+    CREATE ROLE oltp_user LOGIN PASSWORD 'oltp_pwd';
+    ```
+  - #### *C.1.2.　OLTP Role*
+    ```
+    # olap_owner: 擁有者權限
+    CREATE ROLE olap_owner NOLOGIN;
+    
+    # olap_user: 只讀權限
+    CREATE ROLE olap_user LOGIN PASSWORD 'olap_pwd';
+    ```
+- ### *C.2.　Schema 權限隔離*
+  - #### *C.2.1.　OLTP Role*
+    ```
+    -- 1. 確保 oltp_owner 為 oltp schema 擁有者
+    ALTER SCHEMA oltp OWNER TO oltp_owner;
+  
+    -- 2. 確保 oltp_user 只能在 oltp schema 讀/寫資料，但不能改結構
+    GRANT USAGE ON SCHEMA oltp TO oltp_user;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA oltp TO oltp_user;
+  
+    -- 3. 設定未來新建表格的預設權限
+    -- 針對表格： 確保以後新創的表, oltp_user 都能讀寫
+    ALTER DEFAULT PRIVILEGES FOR ROLE oltp_owner IN SCHEMA oltp
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO oltp_user;
+  
+    -- 針對序號： 確保以後新創的自增 ID, oltp_user 都能使用
+    ALTER DEFAULT PRIVILEGES FOR ROLE oltp_owner IN SCHEMA oltp
+    GRANT USAGE, SELECT ON SEQUENCES TO oltp_user;
+    ```
+  - #### *C.2.2.　OLAP Role*
+    ```
+    -- 1. 確保 olap_owner 為 olap schema 擁有者
+    ALTER SCHEMA olap OWNER TO olap_owner;
+  
+    -- 2. 確保 olap_user 只能在 olap schema 讀/寫資料，但不能改結構
+    GRANT USAGE ON SCHEMA olap TO olap_user;
+    GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA olap TO olap_user;
+  
+    -- 3. 設定未來新建物件的預設權限
+    -- 針對表格： 確保以後新創的表, olap_user 都能讀寫
+    ALTER DEFAULT PRIVILEGES FOR ROLE olap_owner IN SCHEMA olap
+    GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO olap_user;
+  
+    -- 針對序號： 確保以後新創的自增 ID, olap_user 都能使用
+    ALTER DEFAULT PRIVILEGES FOR ROLE olap_owner IN SCHEMA olap
+    GRANT USAGE, SELECT ON SEQUENCES TO olap_user;
+  
+    -- 4. 確保 olap_user 只能在 oltp schema 讀取資料
+    GRANT USAGE ON SCHEMA oltp TO olap_user;
+    GRANT SELECT ON ALL TABLES IN SCHEMA oltp TO olap_user;
+    ```
+  - #### *C.2.3.　Remove Public Role 預設權限*
+    ```
+    REVOKE ALL ON SCHEMA oltp FROM PUBLIC;
+    REVOKE ALL ON SCHEMA olap FROM PUBLIC;
+    ```
+
+- ### *C.3.　設定 Default Schema*
+  ```
+  ALTER ROLE oltp_owner
+  SET search_path = oltp;
+  
+  ALTER ROLE oltp_user
+  SET search_path = oltp;
+  
+  ALTER ROLE olap_owner
+  SET search_path = olap;
+  
+  ALTER ROLE olap_user
+  SET search_path = olap;
+  ```
+
+- ### *C.4.　設定使用者資源使用上限 ( 避免屎 SQL 拖垮整個實例 )*
+  - #### *⭐ C.4.1.　Query 執行時間限制*
+    ```
+    # 避免使用者寫出無限迴圈的 SQL，或是拖垮整個實例的 SQL
+    # statement_timeout: query 最長執行時間 → 自動 kill query
+  
+    ALTER ROLE oltp_user
+    SET statement_timeout = '10s';
+  
+    ALTER ROLE olap_user
+    SET statement_timeout = '60s';
+    ```
+
+  - #### *C.4.2.　Query planning 限制*
+    ```
+    # lock_timeout: 等鎖最長時間 → 直接失敗
+  
+    ALTER ROLE oltp_user
+    SET lock_timeout = '3s';
+  
+    ALTER ROLE olap_user
+    SET lock_timeout = '10s';
+    ```
+
+  - #### *C.4.3.　idle 連線限制*
+    ```
+    idle_in_transaction_session_timeout: 忘記 commit 的 session → kill session
+  
+    ALTER ROLE oltp_user
+    SET idle_in_transaction_session_timeout = '30s';
+  
+    ALTER ROLE olap_user
+    SET idle_in_transaction_session_timeout = '60s';
+    ```
+
+  - #### *⭐ C.4.4.　Memory 限制*
+    ```
+    # 避免一個 query 吃爆 RAM 
+    # 最常拖垮系統的原因就是 work_mem 設定過大 → 大量資料排序/聚合 → 吃爆記憶體 → 整個實例當掉
+  
+    ALTER ROLE oltp_user
+    SET work_mem = '8MB';
+  
+    ALTER ROLE olap_user
+    SET work_mem = '64MB';
+    ```
+
+  - #### *C.4.5.　Parallel query 限制*
+    ```
+    # Parallel 只有在 large scan / aggregation 才有用
+  
+    ALTER ROLE oltp_user
+    SET max_parallel_workers_per_gather = 0;
+  
+    ALTER ROLE olap_user
+    SET max_parallel_workers_per_gather = 2;
+    ```
+
+  - #### *⭐ C.4.6.　連線數限制*
+    ```
+    # 直接限制 user 連線數
+  
+    ALTER ROLE oltp_user
+    CONNECTION LIMIT 50;
+  
+    ALTER ROLE olap_user
+    CONNECTION LIMIT 5;
+    ```
+
+  - #### *⭐ C.4.7.　temp file 限制*
+    ```
+    # temp_file_limit: query 可用 disk 上限
+    # 避免 query 做大量 sort / hash 吃爆磁碟空間, 導致整個實例當掉 
+  
+    ALTER ROLE oltp_user
+    SET temp_file_limit = '0.5GB';
+  
+    ALTER ROLE olap_user
+    SET temp_file_limit = '2GB';
+    ```
 
 <br>
 
-### *D.　Index 加速查詢*
-```
-# 索引是透過「空間換取時間」，讓資料庫從漫無目的的搜尋，進化為有邏輯的快速定位。
-  # 創建目的: 為常見查詢模式服務
-  # 優: 大幅提升查詢效率，尤其在大量資料中；
-  # 缺: 會佔用額外儲存空間，且在寫入資料時可能會降低性能。
- 
-# 有無 INDEX 差異對於查詢效率的影響 ( 1000 W rows )：
-  # 有: 直接定位 ( 0.02 s )
-  # 無: 掃描整個 partition ( 8 s )
+### *D.　Create Table & Index Settings*
+- ### *D.1.　Create Table List*
+  ```
+  oltp.machine_events
+  oltp.machine_status_logs
+  oltp.machines
+  oltp.production_orders
+  oltp.production_records
+  oltp.products
+  
+  olap.dim_machine
+  olap.dim_product
+  olap.dim_time
+  olap.fact_machine_status
+  olap.fact_production
+  ```
+  ![PNG](../assets/all_table.png)
 
-# 其他
-  # INDEX 定義順序有差
-    # 快: (machine_id, event_time) : 先定位 machine_id，再掃時間範圍
-    # 慢: (event_time, machine_id) : 先掃整段時間，再過濾 machine
-  # 拆分區間
-    # 按日: metadata overhead
-    # 按月是最折衷作法
-    # 按年: table 太大
-
-X -> oltp.products # product_id SERIAL PRIMARY KEY 已經建立
-idx_machines_line -> oltp.machines
-idx_orders_product -> oltp.production_orders
-idx_production_machine_time -> oltp.production_records
-idx_events_machine_time -> oltp.machine_events
-idx_status_machine_time -> oltp.machine_status_logs
-```
+- ### *D.2.　Index 加速查詢*
+  ```
+  # 索引是透過「空間換取時間」，讓資料庫從漫無目的的搜尋，進化為有邏輯的快速定位。
+    # 創建目的: 為常見查詢模式服務
+    # 優: 大幅提升查詢效率，尤其在大量資料中；
+    # 缺: 會佔用額外儲存空間，且在寫入資料時可能會降低性能。
+   
+  # 有無 INDEX 差異對於查詢效率的影響 ( 1000 W rows )：
+    # 有: 直接定位 ( 0.02 s )
+    # 無: 掃描整個 partition ( 8 s )
+  
+  # 其他
+    # INDEX 定義順序有差
+      # 快: (machine_id, event_time) : 先定位 machine_id，再掃時間範圍
+      # 慢: (event_time, machine_id) : 先掃整段時間，再過濾 machine
+    # 拆分區間
+      # 按日: metadata overhead
+      # 按月是最折衷作法
+      # 按年: table 太大
+  
+  X -> oltp.products # product_id SERIAL PRIMARY KEY 已經建立
+  idx_machines_line -> oltp.machines
+  idx_orders_product -> oltp.production_orders
+  idx_production_machine_time -> oltp.production_records
+  idx_events_machine_time -> oltp.machine_events
+  idx_status_machine_time -> oltp.machine_status_logs
+  ```
 
 <br>
 
-### *E.　常見查詢*
+### *E.　建立物化檢視表 ( Materialized View, MV )*
+
+<br>
+
+### *F.　常見查詢*
 - ### *OLAP : 每台機器運行時間*
   ```
   SELECT
