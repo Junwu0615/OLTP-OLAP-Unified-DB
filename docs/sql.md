@@ -142,8 +142,11 @@ CREATE SCHEMA IF NOT EXISTS olap;
   
     -- 2. 確保 oltp_user 只能在 oltp schema 讀/寫資料，但不能改結構
     GRANT USAGE ON SCHEMA oltp TO oltp_user;
+    -- 針對表格
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA oltp TO oltp_user;
-  
+    -- 針對序號
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA oltp TO oltp_user;
+    
     -- 3. 設定未來新建表格的預設權限
     -- 針對表格： 確保以後新創的表, oltp_user 都能讀寫
     ALTER DEFAULT PRIVILEGES FOR ROLE oltp_owner IN SCHEMA oltp
@@ -160,7 +163,10 @@ CREATE SCHEMA IF NOT EXISTS olap;
   
     -- 2. 確保 olap_user 只能在 olap schema 讀/寫資料，但不能改結構
     GRANT USAGE ON SCHEMA olap TO olap_user;
+    -- 針對表格
     GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA olap TO olap_user;
+    -- 針對序號
+    GRANT USAGE, SELECT ON ALL SEQUENCES IN SCHEMA olap TO olap_user;
   
     -- 3. 設定未來新建物件的預設權限
     -- 針對表格： 確保以後新創的表, olap_user 都能讀寫
@@ -341,10 +347,13 @@ CREATE SCHEMA IF NOT EXISTS olap;
       COUNT(*)
   FROM olap.fact_machine_status f
   JOIN olap.dim_machine m
-  ON f.machine_key = m.machine_key
+  ON 1=1
+    AND f.machine_key = m.machine_key
   JOIN olap.dim_time t
-  ON f.time_key = t.time_key
-  WHERE f.status = 'RUNNING'
+  ON 1=1
+    AND f.time_key = t.time_key
+  WHERE 1=1
+    AND f.status = 'RUNNING'
   GROUP BY m.machine_name, t.year, t.month;
   ```
 - ### *OLAP : 每個產品產量*
@@ -354,6 +363,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
       SUM(quantity)
   FROM olap.fact_production f
   JOIN olap.dim_product p
-  ON f.product_key = p.product_key
+  ON 1=1
+    AND f.product_key = p.product_key
   GROUP BY p.product_name;
   ```

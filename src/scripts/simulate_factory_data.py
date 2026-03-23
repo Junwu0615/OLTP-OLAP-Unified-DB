@@ -1,23 +1,25 @@
+"""
+Update Date: 2026-03-24
+"""
 import random, psycopg2
 from datetime import datetime, timedelta
+
 
 # ===============================
 # DB Connection
 # ===============================
-
 conn = psycopg2.connect(
     host="localhost",
-    database="factory",
-    user="postgres",
-    password="postgres"
+    database="pgdatabase",
+    user="oltp_user",
+    password="oltp_pwd"
 )
-
 cursor = conn.cursor()
+
 
 # ===============================
 # Config
 # ===============================
-
 NUM_PRODUCTS = 5
 NUM_MACHINES = 20
 NUM_ORDERS = 30
@@ -26,12 +28,11 @@ SIMULATION_HOURS = 24
 STATUSES = ["RUNNING", "IDLE", "DOWN"]
 EVENT_TYPES = ["ERROR", "MAINTENANCE", "ALARM"]
 
+
 # ===============================
 # Generate Products
 # ===============================
-
 def generate_products():
-
     for i in range(NUM_PRODUCTS):
         cursor.execute("""
             INSERT INTO oltp.products (product_name, product_type)
@@ -40,7 +41,6 @@ def generate_products():
             f"Product-{i}",
             random.choice(["A","B","C"])
         ))
-
     conn.commit()
     print("products generated")
 
@@ -48,11 +48,8 @@ def generate_products():
 # ===============================
 # Generate Machines
 # ===============================
-
 def generate_machines():
-
     for i in range(NUM_MACHINES):
-
         cursor.execute("""
             INSERT INTO oltp.machines (machine_name, machine_type, line_no)
             VALUES (%s,%s,%s)
@@ -61,7 +58,6 @@ def generate_machines():
             random.choice(["CNC","DRILL","LATHE"]),
             f"L{random.randint(1,3)}"
         ))
-
     conn.commit()
     print("machines generated")
 
@@ -69,11 +65,8 @@ def generate_machines():
 # ===============================
 # Generate Orders
 # ===============================
-
 def generate_orders():
-
     for i in range(NUM_ORDERS):
-
         start_time = datetime.now() - timedelta(hours=random.randint(1,48))
         end_time = start_time + timedelta(hours=random.randint(1,5))
 
@@ -87,7 +80,6 @@ def generate_orders():
             start_time,
             end_time
         ))
-
     conn.commit()
     print("orders generated")
 
@@ -95,17 +87,11 @@ def generate_orders():
 # ===============================
 # Generate Machine Status Logs
 # ===============================
-
 def generate_machine_status():
-
     start_time = datetime.now() - timedelta(hours=SIMULATION_HOURS)
-
     for machine_id in range(1, NUM_MACHINES + 1):
-
         current_time = start_time
-
         while current_time < datetime.now():
-
             status = random.choices(
                 STATUSES,
                 weights=[0.7,0.2,0.1]
@@ -120,7 +106,6 @@ def generate_machine_status():
                 status,
                 current_time
             ))
-
             current_time += timedelta(minutes=random.randint(1,5))
 
     conn.commit()
@@ -132,9 +117,7 @@ def generate_machine_status():
 # ===============================
 
 def generate_production_records():
-
     for _ in range(500):
-
         event_time = datetime.now() - timedelta(
             minutes=random.randint(0,1440)
         )
@@ -150,7 +133,6 @@ def generate_production_records():
             random.randint(1,10),
             event_time
         ))
-
     conn.commit()
     print("production records generated")
 
@@ -158,11 +140,8 @@ def generate_production_records():
 # ===============================
 # Generate Machine Events
 # ===============================
-
 def generate_machine_events():
-
     for _ in range(100):
-
         event_time = datetime.now() - timedelta(
             minutes=random.randint(0,1440)
         )
@@ -177,29 +156,26 @@ def generate_machine_events():
             "auto generated event",
             event_time
         ))
-
     conn.commit()
     print("machine events generated")
 
 
-# ===============================
-# MAIN
-# ===============================
-
 def main():
+    try:
+        generate_products()
+        generate_machines()
+        generate_orders()
+        generate_machine_status()
+        generate_production_records()
+        generate_machine_events()
+        print("simulation completed")
 
-    generate_products()
-    generate_machines()
-    generate_orders()
-    generate_machine_status()
-    generate_production_records()
-    generate_machine_events()
+    except Exception as e:
+        print("Exception:", e)
 
-    cursor.close()
-    conn.close()
-
-    print("simulation completed")
-
+    finally:
+        cursor.close()
+        conn.close()
 
 if __name__ == "__main__":
     main()
