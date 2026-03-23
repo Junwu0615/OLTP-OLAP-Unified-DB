@@ -34,6 +34,7 @@ Schema 設計只是為了服務該負載的結果。
 | Add Airflow | By Docker | 2026-03-21 |
 | SQL Script | this_month_partition.sql | 2026-03-22 |
 | DB Settings | 權限切割設置 | 2026-03-23 |
+| Add PoWA | By Docker | 2026-03-23 |
 | Simulate Test Run | - | - |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | OLTP to OLAP By ETL | - | - |
@@ -52,6 +53,8 @@ Schema 設計只是為了服務該負載的結果。
 | PostgreSQL | for Airflow | [5433](http:127.0.0.1:5433) |
 | PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
 | Airflow | - | [8080](http:127.0.0.1:8080) |
+| PoWA | 防屎 SQL 神器 | [5431](http:127.0.0.1:5431) |
+| PoWA UI Web | - | [8888](http:127.0.0.1:8888) |
 
 ### *B.2.　[Service Startup Order](./docs/service_startup_order.md)*
 

@@ -54,3 +54,11 @@
   # 清理所有「未被掛載」的 Volume
   docker volume prune -f
   ```
+
+<br>
+
+### *4.　Startup PoWA*
+- #### *a.　背景啟動*
+  ```
+  docker-compose up --build -d
+  ```

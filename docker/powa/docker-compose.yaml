@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+#  powa-db: # 核心資料庫：預載了所有監控插件的 PostgreSQL
+#    image: dalibo/powa-archivist:15
+#    container_name: powa_db
+#    environment:
+#      - POSTGRES_USER=${POSTGRES_USER}
+#      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+#      - POSTGRES_DB=powa
+#    ports:
+#      - "5431:5432"
+#    volumes:
+#      - powa_data:/var/lib/postgresql/data
+#    networks:
+#      - powa-network
+
+  powa-db:
+    build: .
+    container_name: powa_db
+    environment:
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - POSTGRES_DB=powa
+    ports:
+      - "5431:5432"
+    volumes:
+      - powa_data:/var/lib/postgresql/data
+    networks:
+      - powa-network
+
+  powa-web: # Web介面：視覺化查看最慢的 SQL
+    image: powateam/powa-web
+    container_name: powa_web
+    environment:
+      - POWA_SERVERS_PRIMARY_HOST=powa-db
+      - POWA_SERVERS_PRIMARY_PORT=5432
+      - POWA_SERVERS_PRIMARY_USER=${POWA_SERVERS_PRIMARY_USER}
+      - POWA_SERVERS_PRIMARY_PASS=${POWA_SERVERS_PRIMARY_PASS}
+      - POWA_SERVERS_PRIMARY_DB=powa
+      - COOKIE_SECRET=${COOKIE_SECRET}
+    ports:
+      - "8888:8888"
+    depends_on:
+      - powa-db
+    networks:
+      - powa-network
+
+networks:
+  powa-network:
+    driver: bridge
+
+volumes:
+  powa_data:
