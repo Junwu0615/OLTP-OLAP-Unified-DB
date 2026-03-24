@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 """
 TODO
-    Update Date: 2026-03-24
+    Update Date: 2026-03-25
     Description:
         - Supporting Contexts: OFF_PEAK, NORMAL, PEAK
     Notice:
@@ -11,6 +11,7 @@ import os, time, yaml, random, psycopg2
 from datetime import datetime, timedelta, timezone
 from src.scripts.factory_load_model import get_load_profile
 from src.models.log import Logger
+from src.utils.utils import *
 
 
 logging = Logger(console_name='.main_console')
@@ -47,17 +48,28 @@ def get_connection() -> psycopg2.extensions.connection:
             time.sleep(3)
 
 
-def insert_machine_status(conn, cursor):
+def close_connection(conn, cursor):
+    if cursor:
+        cursor.close()
+        logging.warning("'cursor.close()' called ...")
+    if conn:
+        conn.close()
+        logging.warning("'conn.close()' called ...")
+
+
+def insert_production_order(conn, cursor):
     cursor.execute("""
-    INSERT INTO oltp.machine_status_logs
-    (machine_id, status, event_time)
-    VALUES (%s,%s,%s)
-    """,
-    (
-        random.randint(1, NUM_MACHINES),
-        random.choice(STATUSES),
-        datetime.now()
+    INSERT INTO oltp.production_orders
+    (product_id, planned_quantity, start_time, end_time)
+    VALUES (%s, %s, %s, %s)
+    RETURNING order_id
+    """, (
+        random.randint(1, NUM_PRODUCTS),
+        random.randint(100, 1000),
+        get_now(tzinfo=TZ_UTC_8),
+        None # 結束時間先留空
     ))
+    return cursor.fetchone()[0]
 
 
 def insert_production_record(conn, cursor):
@@ -71,7 +83,20 @@ def insert_production_record(conn, cursor):
         random.randint(1, NUM_MACHINES),
         random.randint(1, NUM_PRODUCTS),
         random.randint(1, 10),
-        datetime.now()
+        get_now(tzinfo=TZ_UTC_8)
+    ))
+
+
+def insert_machine_status(conn, cursor):
+    cursor.execute("""
+    INSERT INTO oltp.machine_status_logs
+    (machine_id, status, event_time)
+    VALUES (%s,%s,%s)
+    """,
+    (
+        random.randint(1, NUM_MACHINES),
+        random.choice(STATUSES),
+        get_now(tzinfo=TZ_UTC_8)
     ))
 
 
@@ -85,7 +110,7 @@ def insert_machine_event(conn, cursor):
         random.randint(1, NUM_MACHINES),
         random.choice(EVENT_TYPES),
         'auto generated event',
-        datetime.now()
+        get_now(tzinfo=TZ_UTC_8)
     ))
 
 
@@ -94,7 +119,7 @@ def simulate(conn, cursor):
         try:
             batch_count = 0
 
-            now = datetime.utcnow().replace(tzinfo=timezone(timedelta(hours=8)))
+            now = get_now(tzinfo=TZ_UTC_8)
             load = get_load_profile(now.hour)
             load_setting = load_cfg[load]
 
@@ -104,6 +129,10 @@ def simulate(conn, cursor):
 
             for _ in range(int(status_count)):
                 insert_machine_status(conn, cursor)
+                batch_count += 1
+
+            for _ in range(int(prod_count)):
+                insert_production_order(conn, cursor)
                 batch_count += 1
 
             for _ in range(int(prod_count)):
@@ -128,11 +157,7 @@ def simulate(conn, cursor):
 
         except psycopg2.OperationalError:
             # reconnect
-            if cursor:
-                cursor.close()
-            if conn:
-                conn.close()
-
+            close_connection(conn, cursor)
             conn = get_connection()
             cursor = conn.cursor()
 
@@ -153,10 +178,7 @@ def main():
         logging.error('偵測到 Ctrl+C，正在關閉連線...', exc_info=False)
 
     finally:
-        if cursor:
-            cursor.close()
-        if conn:
-            conn.close()
+        close_connection(conn, cursor)
         logging.warning('Factory Stream Simulation Stopped.')
 
 if __name__ == '__main__':
