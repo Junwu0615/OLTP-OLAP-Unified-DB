@@ -8,7 +8,7 @@ TODO
         - SET synchronous_commit = OFF; -- session 設定 ( 壓測必開 )
 """
 import os, time, yaml, random, psycopg2
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from src.scripts.factory_load_model import get_load_profile
 from src.models.log import Logger
 
@@ -20,6 +20,7 @@ with open(YAML_CONFIG_PATH) as f:
     config = yaml.safe_load(f)
 
 db = config['database']
+factory = config['factory']
 simulation = config['simulation']
 load_cfg = config['load_profile']
 
@@ -28,13 +29,11 @@ BATCH_SIZE = 500
 STATUSES = simulation['status_types']
 EVENT_TYPES = simulation['event_types']
 
-NUM_PRODUCTS = config['factory']['products']
-NUM_ORDERS = config['simulation']['orders']
+NUM_PRODUCTS = factory['products']
+NUM_ORDERS = simulation['orders']
 
-machine_layout = config['factory']['machine_layout']
-NUM_MACHINES = sum(
-    len(machines) for machines in machine_layout.values()
-)
+machine_layout = factory['machine_layout']
+NUM_MACHINES = sum(len(machines) for machines in machine_layout.values())
 
 
 def get_connection() -> psycopg2.extensions.connection:
@@ -95,7 +94,7 @@ def simulate(conn, cursor):
         try:
             batch_count = 0
 
-            now = datetime.now()
+            now = datetime.utcnow().replace(tzinfo=timezone(timedelta(hours=8)))
             load = get_load_profile(now.hour)
             load_setting = load_cfg[load]
 
@@ -151,7 +150,7 @@ def main():
         simulate(conn, cursor)
 
     except KeyboardInterrupt:
-        logger.error('偵測到 Ctrl+C，正在關閉連線...', exc_info=False)
+        logging.error('偵測到 Ctrl+C，正在關閉連線...', exc_info=False)
 
     finally:
         if cursor:
