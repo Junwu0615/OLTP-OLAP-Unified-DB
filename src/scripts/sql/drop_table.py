@@ -4,7 +4,7 @@ Update Date: 2026-03-24
 Description: drop the specified tables
 """
 import psycopg2
-from src.models.log import Logger
+from src.modules.log import Logger
 
 logging = Logger(console_name='.main_console')
 

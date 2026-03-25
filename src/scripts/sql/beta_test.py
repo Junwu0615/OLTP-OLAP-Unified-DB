@@ -4,7 +4,7 @@ Update Date: 2026-03-24
 """
 import random, psycopg2
 from datetime import datetime, timedelta
-from src.models.log import Logger
+from src.modules.log import Logger
 
 logging = Logger(console_name='.main_console')
 

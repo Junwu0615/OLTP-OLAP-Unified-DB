@@ -9,8 +9,8 @@ TODO
 """
 import os, time, yaml, random, psycopg2
 from datetime import datetime, timedelta, timezone
-from src.scripts.factory_load_model import get_load_profile
-from src.models.log import Logger
+from src.scripts.simulate_v1.factory_load_model import get_load_profile
+from src.modules.log import Logger
 from src.utils.utils import *
 
 
