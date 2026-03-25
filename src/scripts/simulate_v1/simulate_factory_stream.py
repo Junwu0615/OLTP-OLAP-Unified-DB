@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 """
 TODO
-    Update Date: 2026-03-25
+    Update Date: 2026-03-26
     Description:
         - Supporting Contexts: OFF_PEAK, NORMAL, PEAK
     Notice:
         - SET synchronous_commit = OFF; -- session 設定 ( 壓測必開 )
 """
-import os, time, yaml, random, psycopg2
+import os, time, yaml, random, copy, psycopg2
 from datetime import datetime, timedelta, timezone
 
 from src.scripts.simulate_v1.factory_load_model import get_load_profile
@@ -32,10 +32,6 @@ BATCH_SIZE = 500
 STATUSES = simulate['status_types']
 EVENT_TYPES = simulate['event_types']
 NUM_ORDERS = simulate['orders']
-
-# TODO : 從資料庫讀取產品資訊
-NUM_PRODUCTS = factory['products'] # auto
-machine_layout = factory['machine_layout'] # auto
 
 
 def get_connection() -> psycopg2.extensions.connection:
@@ -71,15 +67,14 @@ def update_order_status(cursor, event_dict):
     TODO 檢查是否有訂單完成，若完成則更新訂單狀態並從訂單列表移除
     """
     if len(event_dict['order_list']) > 0:
-        for order_id in event_dict['order_list']:
+        for order_id in copy.deepcopy(event_dict['order_list']):
             detail = event_dict['detail'][order_id]
             if detail['produced_qty'] >= detail['target_qty']:
                 cursor.execute("""
                 UPDATE oltp.production_orders
-                SET end_t = %s, updated_at = %s
+                SET end_t = %s
                 WHERE order_id = %s
                 """, (
-                    get_now(tzinfo=TZ_UTC_8),
                     get_now(tzinfo=TZ_UTC_8),
                     order_id
                 ))
@@ -94,25 +89,24 @@ def insert_production_order(cursor, event_dict):
     """
     TODO 建立生產訂單
     """
-    product_id = random.choice(event_dict['product_list'])
-    target_qty = random.randint(simulate['target_qty_min'], simulate['target_qty_max'])
+    _product_id = random.choice(event_dict['product_list'])
+    _target_qty = random.randint(simulate['target_qty_min'], simulate['target_qty_max'])
 
     cursor.execute("""
     INSERT INTO oltp.production_orders
-    (product_id, quantity, start_t)
-    VALUES (%s, %s, %s)
+    (product_id, quantity)
+    VALUES (%s, %s)
     RETURNING order_id
     """, (
-        product_id,
-        target_qty,
-        get_now(tzinfo=TZ_UTC_8),
+        _product_id,
+        _target_qty,
     ))
 
-    order_id = cursor.fetchone()[0]
-    event_dict['order_list'] += [order_id]
-    event_dict['detail'][order_id] = {
-        'product_id': product_id,
-        'target_qty': target_qty,
+    _order_id = cursor.fetchone()[0]
+    event_dict['order_list'] += [_order_id]
+    event_dict['detail'][_order_id] = {
+        'product_id': _product_id,
+        'target_qty': _target_qty,
         'produced_qty': 0
     }
 
@@ -129,7 +123,7 @@ def insert_production_record(cursor, event_dict):
     cursor.execute("""
     INSERT INTO oltp.production_records
     (order_id, machine_id, product_id, quantity)
-    VALUES (%s, %s, %s, %s, %s)
+    VALUES (%s, %s, %s, %s)
     """,
     (
         _order_id,
@@ -142,32 +136,102 @@ def insert_production_record(cursor, event_dict):
     event_dict['detail'][_order_id]['produced_qty'] += _quantity
 
 
-def insert_machine_status(cursor):
+def insert_machine_status(cursor, event_dict):
     """
-    TODO 插入機台狀態
+    TODO 插入機台狀態 # 有問題
     """
+    _product_id = random.choice(event_dict['product_list'])
+    _event_status = random.choice(STATUSES)
+
     cursor.execute("""
     INSERT INTO oltp.machine_status_logs
     (machine_id, status)
-    VALUES (%s, %s, %s)
+    VALUES (%s, %s)
     """,
     (
-        random.choice(event_dict['product_list']),
-        random.choice(STATUSES),
+        _product_id,
+        _event_status,
     ))
 
 
-def insert_machine_event(cursor):
+def insert_machine_event(cursor, event_dict):
+    """
+    TODO 插入機台事件 # 有問題
+    """
+    _machine_id = random.choice(event_dict['machine_list'])
+    _event_type = random.choice(EVENT_TYPES)
+
     cursor.execute("""
     INSERT INTO oltp.machine_events
     (machine_id, event_type, description)
-    VALUES (%s, %s, %s, %s)
+    VALUES (%s, %s, %s)
     """,
     (
-        random.choice(event_dict['machine_list']),
-        random.choice(EVENT_TYPES),
+        _machine_id,
+        _event_type,
         'Auto Generated Event',
     ))
+
+
+def init_transaction_dict(conn, cursor) -> dict:
+    """
+    TODO 初始化事務字典 : 用字典記錄必要變數，包含機台列表、產品列表、訂單列表
+        - 從資料庫讀取產品資訊
+        - 產品完成後 移除訂單索引
+    """
+    event_dict = {
+        'machine_list': [],  # 機台列表 # 過程不異動
+        'product_list': [],  # 產品列表 # 過程不異動
+        'order_list': [],    # 訂單列表 # 過程會異動
+        'detail': {} # 訂單詳情字典，key: order_id, value: dict (product_id, target_qty, produced_qty)
+    }
+
+    try:
+        # 取得機台列表
+        cursor.execute("""
+        SELECT machine_id
+        FROM oltp.machines
+        """)
+        machines = cursor.fetchall()
+        event_dict['machine_list'] = sorted(i[0] for i in machines)
+
+        # 取得產品列表
+        cursor.execute("""
+        SELECT product_id
+        FROM oltp.products
+        """)
+        products = cursor.fetchall()
+        event_dict['product_list'] = sorted(i[0] for i in products)
+
+        # 初始化第一批訂單
+        for _ in range(NUM_ORDERS):
+            _product_id = random.choice(event_dict['product_list'])
+            _target_qty = random.randint(simulate['target_qty_min'], simulate['target_qty_max'])
+
+            cursor.execute("""
+            INSERT INTO oltp.production_orders (product_id, quantity)
+            VALUES (%s, %s)
+            RETURNING order_id
+            """, (
+                _product_id,
+                _target_qty
+            ))
+
+            _order_id = cursor.fetchone()[0]
+            event_dict['order_list'] += [_order_id]
+            event_dict['detail'][_order_id] = {
+                'product_id': _product_id,
+                'target_qty': _target_qty,
+                'produced_qty': 0
+            }
+
+        conn.commit()
+
+    except Exception as e:
+        logging.error('Exception', exc_info=True)
+        conn.rollback()
+
+    return event_dict
 
 
 def simulate_stream(conn, cursor, event_dict):
@@ -180,47 +244,27 @@ def simulate_stream(conn, cursor, event_dict):
             load_setting = load_cfg[load]
 
             status_count = load_setting['status_per_sec']
-            prod_count = load_setting['production_per_sec']
+            prod_count = load_setting['prod_per_sec']
             event_count = load_setting['event_per_sec']
             prob = load_setting['prob']
 
             check_is_create_order(cursor, event_dict, prob)
 
-            # TODO 待優化情境邏輯 -1
-            for _ in range(int(status_count)):
-                insert_machine_status(cursor)
-                batch_count += 1
-
             for _ in range(int(prod_count)):
                 insert_production_record(cursor, event_dict)
                 batch_count += 1
 
-            # TODO 待優化情境邏輯 -2
-            if random.random() < event_count:
-                insert_machine_event(cursor)
+            # TODO 待優化情境邏輯 -1
+            for _ in range(int(status_count)):
+                insert_machine_status(cursor, event_dict)
                 batch_count += 1
 
+            # TODO 待優化情境邏輯 -2
+            if random.random() < event_count:
+                insert_machine_event(cursor, event_dict)
+                batch_count += 1
 
-            # 確認是否有訂單以滿足生產 # 若滿足標記完成並從訂單列表移除
-            if len(event_dict['order_list']) > 0:
-                update_order_status(cursor, event_dict)
-
-                for order_id in event_dict['order_list'][:]:
-                    detail = event_dict['detail'][order_id]
-                    if detail['produced_qty'] >= detail['target_qty']:
-                        # 標記訂單完成
-                        cursor.execute("""
-                        UPDATE oltp.production_orders
-                        SET status = 'COMPLETED', end_t = %s
-                        WHERE order_id = %s
-                        """, (
-                            get_now(tzinfo=TZ_UTC_8),
-                            order_id
-                        ))
-
-                        # 從訂單列表移除
-                        event_dict['order_list'].remove(order_id)
-
+            update_order_status(cursor, event_dict)
 
             if batch_count >= BATCH_SIZE:
                 conn.commit()
@@ -245,23 +289,6 @@ def simulate_stream(conn, cursor, event_dict):
             conn.rollback()
 
 
-def init_transaction_dict(conn, cursor):
-    """
-    TODO 初始化事務字典
-        - 用字典記錄必要變數，包含機台列表、產品列表、訂單列表
-        - 完成產品後移除 訂單列表 索引
-    """
-    event_dict = {
-        'machine_list': [],  # 機台列表 # 過程不異動
-        'product_list': [],  # 產品列表 # 過程不異動
-        'order_list': [],    # 訂單列表 # 過程會異動
-        'detail': {} # 訂單詳情字典，key: order_id, value: dict (product_id, target_qty, produced_qty)
-    }
-
-
-    return event_dict
-
-
 def main():
     conn, cursor = None, None
     logging.warning('Starting Factory Stream Simulation...')
@@ -270,7 +297,9 @@ def main():
         cursor = conn.cursor()
 
         event_dict = init_transaction_dict(conn, cursor)
-        simulate_stream(conn, cursor, event_dict)
+
+        if event_dict['detail'] != {}:
+            simulate_stream(conn, cursor, event_dict)
 
     except KeyboardInterrupt:
         logging.error('偵測到 Ctrl+C，正在關閉連線...', exc_info=False)
