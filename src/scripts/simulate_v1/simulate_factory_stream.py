@@ -84,6 +84,9 @@ def update_order_status(cursor, event_dict):
                 # 同時移除訂單詳情
                 event_dict['detail'].pop(order_id, None)
 
+                logging.warning(f'[order_id={order_id}] have been completed. '
+                                f'( produced_qty: {detail['produced_qty']} >= target_qty: {detail['target_qty']} )')
+
 
 def insert_production_order(cursor, event_dict):
     """
