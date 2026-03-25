@@ -43,11 +43,11 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Script | factory_load_model.py | 2026-03-24 |
 | Script | init_factory_data.py | 2026-03-24 |
 | Script | simulate_factory_stream.py | 2026-03-24 |
+| Single to Batch Insert | - | 2026-03-26 |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
 | OLTP to OLAP By ETL | - | - |
 | Analytical Queries | - | - |
-| Single to Batch Insert | - | - |
 | Multi-Instance Simulate | - | - |
 | Benchmark | - | - |
 | Metrics | - | - |
