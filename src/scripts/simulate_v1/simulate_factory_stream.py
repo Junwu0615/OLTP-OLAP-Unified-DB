@@ -43,30 +43,30 @@ def update_order_status(cursor, event_dict, done_qty):
     """
     if len(event_dict['order_dict'].keys()) > 0:
         _target_list = event_dict['order_dict'].keys()
-        for order_id in _target_list:
-            detail = event_dict['detail'][order_id]
+        for _order_id in _target_list:
+            detail = event_dict['detail'][_order_id]
             if detail['produced_qty'] >= detail['target_qty']:
                 cursor.execute("""
                 UPDATE oltp.production_orders
                 SET end_at = %s
                 WHERE order_id = %s
                 """, (
-                    get_now(),
-                    order_id
+                    get_now(hours=8),
+                    _order_id
                 ))
 
                 # 從訂單字典移除
-                del event_dict['order_dict'][order_id]
+                del event_dict['order_dict'][_order_id]
 
                 # 同時移除訂單詳情
-                event_dict['detail'].pop(order_id, None)
+                del event_dict['detail'][_order_id]
 
                 # 清空機台持單狀態
                 event_dict['machine_status'][_machine_id] = None
 
                 done_qty += 1
 
-                logging.warning(f'[order_id={order_id}] have been completed. '
+                logging.warning(f'[order_id={_order_id}] have been completed. '
                                 f'( produced_qty: {detail['produced_qty']} >= target_qty: {detail['target_qty']} )')
 
 
@@ -124,7 +124,7 @@ def insert_production_record(cursor, event_dict, _machine_id):
         SET start_at = %s
         WHERE order_id = %s
         """, (
-            get_now(),
+            get_now(hours=8),
             _order_id
         ))
         logging.info(f'[{_machine_type}: {_machine_id}] Production Begins Based on the Order [{_order_id}].')
@@ -241,13 +241,12 @@ def init_transaction_dict(conn, cursor) -> dict:
             _target_qty = random.randint(simulate['target_qty_min'], simulate['target_qty_max'])
 
             cursor.execute("""
-            INSERT INTO oltp.production_orders (product_id, quantity, start_at)
-            VALUES (%s, %s, %s)
+            INSERT INTO oltp.production_orders (product_id, quantity)
+            VALUES (%s, %s)
             RETURNING order_id
             """, (
                 _product_id,
                 _target_qty,
-                get_now()
             ))
 
             _order_id = cursor.fetchone()[0]
