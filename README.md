@@ -6,7 +6,8 @@
 [![](https://img.shields.io/badge/Technology-OLTP-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
 [![](https://img.shields.io/badge/Technology-OLAP-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
 [![](https://img.shields.io/badge/Technology-HTAP-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
-[![](https://img.shields.io/badge/Technology-Terraform-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB) <br>
+[![](https://img.shields.io/badge/Technology-Terraform-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
+[![](https://img.shields.io/badge/Technology-Grafana-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB) <br>
 
 <br>
 
@@ -21,7 +22,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 ### *A.　Current Progress*
 |**Item**|**Description**|**Time**|
-|:--:|:--:|:--:|
+|:--:|:--:|:- -:|
 | Create Project | - | 2026-03-20 |
 | Add PostgreSQL | By Docker | 2026-03-20 |
 | Define Process | - | 2026-03-20 |
@@ -55,6 +56,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Metrics | - | - |
 | Add Terraform | VM / Network / Storage | - |
 | Add Makefile | 整套 lab 一鍵部署 | - |
+| Add Grafana | 可視化儀表板 | - |
 
 <br>
 
