@@ -52,6 +52,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Multi-Instance Simulate | - | - |
 | Benchmark | - | - |
 | Metrics | - | - |
+| Add Terraform | VM / Network / Storage | - |
+| Add Makefile | 整套 lab 一鍵部署 | - |
 
 <br>
 
