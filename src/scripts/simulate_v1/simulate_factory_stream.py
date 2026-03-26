@@ -123,7 +123,7 @@ def insert_production_record(cursor, event_dict, _machine_id):
         WHERE order_id = %s
         """, (
             get_now(),
-            order_id
+            _order_id
         ))
         logging.info(f'[{_machine_type}: {_machine_id}] Production Begins Based on the Order [{_order_id}].')
 
@@ -131,7 +131,7 @@ def insert_production_record(cursor, event_dict, _machine_id):
         # 須確認是否已經訂單在身，若有先完成既有訂單
         _order_id = event_dict['machine_status'][_machine_id]
     else:
-        logging.warning(f'[{_machine_type}] Not Have Order in Queue, Machine [{_machine_id}] IDLE ...')
+        # logging.warning(f'[{_machine_type}] Not Have Order in Queue, Machine [{_machine_id}] IDLE ...')
         return
 
     # TODO 3. 隨機生產數
@@ -312,14 +312,18 @@ def simulate_stream(conn, cursor, event_dict):
                 conn.commit()
                 batch_count = 0
 
+            _idle = sum([1 for k,v in event_dict['machine_status'].items() if v is None])
+            _run = sum([1 for k,v in event_dict['machine_status'].items()]) - _idle
             logging.info(
-                f'batch=[{batch_count}/{BATCH_SIZE}] | '
-                f'mode={mode} | '
-                f'order_qty={order_qty} | '
-                f'done_qty={event_dict['order_count'] - order_qty} | '
-                f'data_qty={data_qty} | '
+                f'MODE={mode} | '
+                f'ORDER_QTY={order_qty} | '
+                f'DONE_QTY={event_dict['order_count'] - order_qty} | '
+                f'DATA_QTY={data_qty} | '
+                f'RUN=[{_run}/{_run + _idle}] | '
+                f'IDLE=[{_idle}/{_run + _idle}] | '
                 f'mach_type=[A,B,C] | '
                 f'mach_prod=[a/b] | '
+                f'BATCH=[{batch_count}/{BATCH_SIZE}] | '
             )
 
             time.sleep(1)
