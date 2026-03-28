@@ -47,10 +47,11 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Script | factory_load_model.py | 2026-03-24 |
 | Script | init_factory_data.py | 2026-03-24 |
 | Script | simulate_factory_stream.py | 2026-03-24 |
-| Single to Batch Insert | - | 2026-03-26 |
+| Single to Batch Insert | 批次發送 | 2026-03-26 |
 | 生成嚴謹 の 靜態數據 | - | 2026-03-26 |
 | 校正嚴謹 の 動態數據 | 單一機台同時間只允許做一件事 /<br>排隊消化訂單 / 訂單生產週期戳記 | 2026-03-27 |
 | 優化情境邏輯 | 插入機台事件 : 🗑️ machine_events | 2026-03-28 |
+| execute -> execute_batch | 批次發送 + 批次提交 | - |
 | 優化情境邏輯 | 插入機台狀態 | - |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
