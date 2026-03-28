@@ -39,42 +39,57 @@ def check_is_create_order(cursor, event_dict, prob) -> bool:
     return False
 
 
-def update_order_status(cursor, event_dict) -> bool:
+def update_order_status(cursor, event_dict) -> int:
     """
     TODO 檢查是否有訂單完成，若完成則更新訂單狀態並從訂單列表移除
     """
-    if len(event_dict['order_dict'].keys()) > 0:
-        _target_list = copy.deepcopy(list(event_dict['order_dict'].keys()))
-        for _order_id in _target_list:
-            detail = event_dict['detail'][_order_id]
-            if detail['produced_qty'] >= detail['target_qty']:
-                cursor.execute("""
-                UPDATE oltp.production_orders
-                SET end_at = %s
-                WHERE order_id = %s
-                """, (
-                    get_now(hours=8),
-                    _order_id
-                ))
+    ret = 0
+    try:
+        if len(event_dict['order_dict'].keys()) > 0:
+            _target_list = copy.deepcopy(list(event_dict['order_dict'].keys()))
+            for _order_id in _target_list:
+                detail = event_dict['detail'][_order_id]
+                if detail['produced_qty'] >= detail['target_qty']:
+                    # TODO 1. 更新訂單結束時間
+                    cursor.execute("""
+                    UPDATE oltp.production_orders
+                    SET end_at = %s
+                    WHERE order_id = %s
+                    """, (
+                        get_now(hours=8),
+                        _order_id
+                    ))
+                    ret += 1
 
-                # 取得 mach_id 資訊
-                _machine_id = event_dict['detail'][_order_id]['mach_id']
+                    # 取得 mach_id 資訊
+                    _machine_id = event_dict['detail'][_order_id]['mach_id']
 
-                # 從訂單字典移除
-                del event_dict['order_dict'][_order_id]
+                    # TODO 2. 更新機台狀態 : RUNNING -> IDLE
+                    cursor.execute("""
+                    INSERT INTO oltp.machine_status_logs
+                    (machine_id, status)
+                    VALUES (%s, %s)
+                    """,
+                    (
+                        _machine_id,
+                        'IDLE',
+                    ))
+                    ret += 1
 
-                # 同時移除訂單詳情
-                del event_dict['detail'][_order_id]
+                    # 從訂單字典移除
+                    del event_dict['order_dict'][_order_id]
 
-                # 清空機台持單狀態
-                event_dict['machine_status'][_machine_id] = None
+                    # 同時移除訂單詳情
+                    del event_dict['detail'][_order_id]
 
-                logging.warning(f'[order_id={_order_id}] have been completed. '
-                                f'( produced_qty: {detail['produced_qty']} >= target_qty: {detail['target_qty']} )')
+                    # 清空機台持單狀態
+                    event_dict['machine_status'][_machine_id] = None
 
-                return True
+                    logging.warning(f'[order_id={_order_id}] have been completed. '
+                    f'( produced_qty: {detail['produced_qty']} >= target_qty: {detail['target_qty']} )')
 
-    return False
+    finally:
+        return ret
 
 
 def insert_production_order(cursor, event_dict):
@@ -112,8 +127,8 @@ def insert_production_order(cursor, event_dict):
 
 def insert_production_record(cursor, event_dict, _machine_id) -> int:
     """
-    TODO 插入生產記錄
-        - 狀況 1 : 第一次匹配生產
+    TODO 插入實時生產記錄
+        - 狀況 1 : 第一次生產匹配
         - 狀況 2 : 持續生產
     """
     ret = 1
@@ -139,12 +154,26 @@ def insert_production_record(cursor, event_dict, _machine_id) -> int:
         ret += 1
         logging.info(f'[{_machine_type}: {_machine_id}] Production Begins Based on the Order [{_order_id}].')
 
+        # TODO 2.2 更新機台狀態 : IDLE -> RUNNING
+        cursor.execute("""
+        INSERT INTO oltp.machine_status_logs
+        (machine_id, status)
+        VALUES (%s, %s)
+        """,
+        (
+            _machine_id,
+            'RUNNING',
+        ))
+        ret += 1
+
     elif event_dict['machine_status'][_machine_id] is not None:
         # 須確認是否已經訂單在身，若有先完成既有訂單
         _order_id = event_dict['machine_status'][_machine_id]
+
     else:
         # logging.warning(f'[{_machine_type}] Not Have Order in Queue, Machine [{_machine_id}] IDLE ...')
         return
+
 
     # TODO 3. 隨機生產數
     _quantity = random.randint(simulate['prod_qty_min'], simulate['prod_qty_max'])
@@ -174,9 +203,14 @@ def insert_production_record(cursor, event_dict, _machine_id) -> int:
 
 def insert_machine_status(cursor, event_dict):
     """
-    TODO 插入機台狀態 # 有問題
+    TODO 插入機台狀態 : 在此實施隨機邏輯，可依照實際情況調整機率
+        隨機目標 : MAINTENANCE / ALARM
+        - MAINTENANCE # 1 # process: [1 -> 2]
+        - IDLE # 2 # process: [2 -> 1], [2 -> 3], [2 -> 4]
+        - RUNNING # 3 # process: [3 -> 2], [3 -> 4]
+        - ALARM # 4 # process: [4 -> 3]
     """
-    _product_id = random.choice(list(event_dict['product_dict'].keys()))
+    _machine_id = random.choice(list(event_dict['machine_dict'].keys()))
     _event_status = random.choice(STATUSES)
 
     cursor.execute("""
@@ -185,28 +219,9 @@ def insert_machine_status(cursor, event_dict):
     VALUES (%s, %s)
     """,
     (
-        _product_id,
+        _machine_id,
         _event_status,
     ))
-
-
-# def insert_machine_event(cursor, event_dict):
-#     """
-#     TODO 插入機台事件 # 有問題
-#     """
-#     _machine_id = random.choice(list(event_dict['machine_dict'].keys()))
-#     _event_type = random.choice(EVENT_TYPES)
-#
-#     cursor.execute("""
-#     INSERT INTO oltp.machine_events
-#     (machine_id, event_type, description)
-#     VALUES (%s, %s, %s)
-#     """,
-#     (
-#         _machine_id,
-#         _event_type,
-#         'Auto Generated Event',
-#     ))
 
 
 def init_transaction_dict(conn, cursor) -> dict:
@@ -247,7 +262,20 @@ def init_transaction_dict(conn, cursor) -> dict:
         event_dict['product_dict'] = {i[0]: i[1] for i in products}
         event_dict['order_queue'] = {i: collections.deque() for i in list(set(i[1] for i in products))}
 
-        # 初始化第一批訂單
+
+        # TODO 1. 更新機台狀態 : IDLE
+        for _machine_id in event_dict['machine_dict'].keys():
+            cursor.execute("""
+            INSERT INTO oltp.machine_status_logs
+            (machine_id, status)
+            VALUES (%s, %s)
+            """,
+            (
+                _machine_id,
+                'IDLE',
+            ))
+
+        # TODO 2. 初始化第一批訂單
         for _ in range(NUM_ORDERS):
             _product_id = random.choice(list(event_dict['product_dict'].keys()))
             _product_type = event_dict['product_dict'].get(_product_id)
@@ -294,7 +322,7 @@ def simulate_stream(conn, cursor, event_dict):
             mode = get_load_profile(now.hour)
             load_setting = load_cfg[mode]
 
-            status_count = load_setting['status_per_sec']
+            # status_count = load_setting['status_per_sec']
             # event_count = load_setting['event_per_sec']
             prob = load_setting['prob']
 
@@ -304,29 +332,23 @@ def simulate_stream(conn, cursor, event_dict):
 
             order_qty = len(event_dict['order_dict'].keys())
 
-            # TODO 所有機台狀態為 False 皆要進行判斷
+            # TODO 所有機台皆要進行判斷狀態更新
             for _machine_id in event_dict['machine_status'].keys():
                 _count = insert_production_record(cursor, event_dict, _machine_id)
                 if isinstance(_count, int):
                     batch_count += _count
                     data_qty += _count
 
-            # TODO 待優化情境邏輯 -1
-            for _ in range(int(status_count)*order_qty):
-                insert_machine_status(cursor, event_dict)
-                batch_count += 1
-                data_qty += 1
+                # TODO 待完善邏輯 !
+                # TODO 隨機更新指定狀態
+                # insert_machine_status(cursor, event_dict)
+                # batch_count += 1
+                # data_qty += 1
 
-            # TODO 待優化情境邏輯 -2
-            # if random.random() < event_count:
-            #     insert_machine_event(cursor, event_dict)
-            #     batch_count += 1
-            #     data_qty += 1
-
-            if update_order_status(cursor, event_dict):
-                done_qty += 1
-                batch_count += 1
-                data_qty += 1
+            _count = update_order_status(cursor, event_dict)
+            done_qty += _count
+            batch_count += _count
+            data_qty += _count
 
             if batch_count >= BATCH_SIZE:
                 conn.commit()
