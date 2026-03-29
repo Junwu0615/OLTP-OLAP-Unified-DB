@@ -389,11 +389,17 @@ def simulate_stream(conn, cursor, event_dict):
                 last_commit_time = time.time()
 
             # TODO 輸出當前模擬狀態
-            _idle = sum([1 for _,v in event_dict['machine_status'].items() if v['status'] is None])
-            _run = sum([1 for _ in event_dict['machine_status'].keys()]) - _idle
             _order_qty = len(event_dict['order_dict'].keys())
+            temp_dict = {}
+            for k, v in event_dict['machine_status'].items():
+                key = v['status']
+                if key not in temp_dict:
+                    temp_dict[key] = 0
+                temp_dict[key] += 1
+            _sum = sum(temp_dict.values())
+            ret_1 = ' | '.join([f'{k}=[{v}/{_sum}]' for k, v in temp_dict.items()])
+            ret_2 = ' | '.join([f'{k}[{len(v)}]' for k,v in event_dict['order_queue'].items()])
 
-            ret = '等機台任領の訂單 : ' + ''.join([f'{k}[{len(v)}] | ' for k,v in event_dict['order_queue'].items()])
             logging.info(
                 f'\n整體の概要 : '
                 f'MODE={mode} | '
@@ -401,10 +407,8 @@ def simulate_stream(conn, cursor, event_dict):
                 f'DONE_QTY={done_qty} | '
                 f'DATA_QTY={data_qty} | '
                 f'BATCH=[{batch_ct}/{BATCH_SIZE}]\n'
-                f'當前機台の狀態 : '
-                f'RUN=[{_run}/{_run + _idle}] | '
-                f'IDLE=[{_idle}/{_run + _idle}]\n'
-                f'{ret}'
+                f'當前機台の狀態 : {ret_1}\n'
+                f'等機台任領の訂單 : {ret_2}'
             )
 
             time.sleep(1)
