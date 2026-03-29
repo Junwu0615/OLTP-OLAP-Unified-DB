@@ -307,9 +307,12 @@ def init_transaction_dict(conn, cursor) -> dict:
 
         conn.commit()
 
-    except Exception as e:
-        logging.error('[Rollback] Exception', exc_info=True)
+    except psycopg2.DatabaseError as e:
+        logging.error(f'[# Rollback] Exception [Code: {e.pgcode}]', exc_info=True)
         conn.rollback()
+
+    except Exception as e:
+        logging.error('[# Other] Exception', exc_info=True)
 
     return event_dict
 
@@ -376,15 +379,19 @@ def simulate_stream(conn, cursor, event_dict):
 
             time.sleep(1)
 
-        except psycopg2.OperationalError:
-            # re-connect
+        # except psycopg2.OperationalError as e:
+        except psycopg2.InterfaceError as e:
+            logging.error('[# Re-Connect] Exception', exc_info=True)
             close_conn(conn, cursor, logging)
             conn = get_conn(db, logging)
             cursor = conn.cursor()
 
-        except Exception as e:
-            logging.error('[Rollback] Exception', exc_info=True)
+        except psycopg2.DatabaseError as e:
+            logging.error(f'[# Rollback] Exception [Code: {e.pgcode}]', exc_info=True)
             conn.rollback()
+
+        except Exception as e:
+            logging.error('[# Other] Exception', exc_info=True)
 
 
 def main():

@@ -100,9 +100,13 @@ def main():
         generate_machines(conn, cursor)
         generate_products(conn, cursor)
 
-    except Exception as e:
-        logging.error('[Rollback] Exception', exc_info=True)
+
+    except psycopg2.DatabaseError as e:
+        logging.error(f'[# Rollback] Exception [Code: {e.pgcode}]', exc_info=True)
         conn.rollback()
+
+    except Exception as e:
+        logging.error('[# Other] Exception', exc_info=True)
 
     finally:
         close_conn(conn, cursor, logging)
