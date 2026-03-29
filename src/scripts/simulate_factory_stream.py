@@ -319,6 +319,7 @@ def init_transaction_dict(conn, cursor) -> dict:
 
 def simulate_stream(conn, cursor, event_dict):
     data_qty, done_qty, batch_count = 0, 0, 0
+    last_commit_time = time.time()
     while True:
         try:
             now = get_now(hours=8, tzinfo=TZ_UTC_8)
@@ -353,9 +354,11 @@ def simulate_stream(conn, cursor, event_dict):
             batch_count += _count
             data_qty += _count
 
-            if batch_count >= BATCH_SIZE:
+            # TODO 根據 BATCH_SIZE 或 時間間隔 (30s) 提交事務
+            if batch_count >= BATCH_SIZE or (time.time() - last_commit_time) > 30:
                 conn.commit()
                 batch_count = 0
+                last_commit_time = time.time()
 
             _idle = sum([1 for _,v in event_dict['machine_status'].items() if v is None])
             _run = sum([1 for _ in event_dict['machine_status'].keys()]) - _idle
