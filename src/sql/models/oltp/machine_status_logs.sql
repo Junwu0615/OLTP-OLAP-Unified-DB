@@ -1,6 +1,6 @@
 CREATE TABLE oltp.machine_status_logs (
     log_id BIGSERIAL,
-    machine_id INT NOT NULL,
+    machine_id INT REFERENCES oltp.machines(machine_id),
     status VARCHAR(20) NOT NULL,
     event_time TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 ) PARTITION BY RANGE (event_time);

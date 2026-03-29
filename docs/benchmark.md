@@ -1,11 +1,11 @@
 ### *A.　Event Description*
 ```
 工廠情境：
-  - 多台機台
-  - 生產訂單
-  - 機台狀態 ( 運轉 / 停機 / 故障 )
-  - 生產產出 ( 良品 / 不良品 )
-  
+  - 定義機台 machines
+  - 定義訂單 products
+  - 生產訂單 production_orders <- [products]
+  - 機台狀態 machine_status_logs
+  - 生產產出 production_records <- [production_orders, machines, products]
 
  CREATE ORDER
       │
@@ -31,8 +31,8 @@ ORDER COMPLETE
 | machines | 靜態 | - | 儲存機台基本資訊 | ⚠️ 預處理 |
 | products | 靜態 | - | 儲存產品基本資訊 | ⚠️ 預處理 |
 | production_orders | 動態 | 低頻 | 記錄生產訂單資訊 | - |
-| 🗑️ machine_events | 動態 | 中頻 | 記錄機台運行過程中的各類事件 | - |
-| machine_status_logs | 動態 | 高頻 | 持續記錄機台狀態變化 | - |
+| 🗑️ machine_events | 動態 | 低頻 | 記錄機台運行過程中的各類事件 | - |
+| machine_status_logs | 動態 | 低頻 | 持續記錄機台狀態變化 | - |
 | production_records | 動態 | 高頻 | 記錄實際生產結果 | - |
 
 - #### *OLAP*

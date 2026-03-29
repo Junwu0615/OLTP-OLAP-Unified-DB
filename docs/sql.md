@@ -3,7 +3,7 @@
   |**Name**|**Description**|**Remark**|
   |--:|:--:|:--:|
   | 🗑️ machine_events | 記錄機台運行過程中的各類事件，例如故障、維修、警報、重新啟動等事件，用於追蹤設備歷史行為。 | 用於事件追蹤與維修分析 |
-  | machine_status_logs | 持續記錄機台狀態變化，例如 RUNNING、IDLE、DOWN 等，形成時間序列資料。 | 依 event_time 進行時間分區 ( Partition Table ) |
+  | machine_status_logs | 持續記錄機台狀態變化，例如 RUNNING、IDLE、ALARM 等，形成時間序列資料。 | 依 event_time 進行時間分區 ( Partition Table ) |
   | machines | 儲存機台基本資訊，例如機台編號、機台名稱、機台型號、所屬產線等。 | 機台主資料表 |
   | production_orders | 記錄生產訂單資訊，例如訂單編號、生產產品、目標產量、開始時間與結束時間。 | 生產排程與訂單管理 |
   | production_records | 記錄實際生產結果，例如某台機台在某時間段生產的產品與產量。 | 生產履歷資料 |

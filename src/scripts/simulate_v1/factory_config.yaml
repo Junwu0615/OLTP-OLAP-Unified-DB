@@ -12,7 +12,7 @@ init_data:
     L3: ["CNC","CNC","CNC","DRILL","LATHE","LATHE"]
 
 simulate:
-  orders: 108 # 第一批生產訂單數量
+  orders: 150 # 第一批生產訂單數量
 
   target_qty_min: 1000 # 目標生産数の最小値
   target_qty_max: 5000 # 目標生産数の最大値
