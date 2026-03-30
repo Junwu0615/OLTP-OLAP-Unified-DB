@@ -2,12 +2,12 @@
 - #### *OLTP*
   |**Name**|**Description**|**Remark**|
   |--:|:--:|:--:|
+  | machines | 儲存機台基本資訊，例如機台編號、機台名稱、機台型號、所屬產線等。 | 機台主資料表 |
+  | products | 儲存產品基本資訊，例如產品名稱、產品型號與規格。 | 產品主資料表 |
   | 🗑️ machine_events | 記錄機台運行過程中的各類事件，例如故障、維修、警報、重新啟動等事件，用於追蹤設備歷史行為。 | 用於事件追蹤與維修分析 |
   | machine_status_logs | 持續記錄機台狀態變化，例如 RUNNING、IDLE、ALARM 等，形成時間序列資料。 | 依 event_time 進行時間分區 ( Partition Table ) |
-  | machines | 儲存機台基本資訊，例如機台編號、機台名稱、機台型號、所屬產線等。 | 機台主資料表 |
   | production_orders | 記錄生產訂單資訊，例如訂單編號、生產產品、目標產量、開始時間與結束時間。 | 生產排程與訂單管理 |
   | production_records | 記錄實際生產結果，例如某台機台在某時間段生產的產品與產量。 | 生產履歷資料 |
-  | products | 儲存產品基本資訊，例如產品名稱、產品型號與規格。 | 產品主資料表 |
 
   ```
   products
@@ -410,12 +410,13 @@ CREATE SCHEMA IF NOT EXISTS olap;
   -- 強制結束該查詢
   SELECT pg_terminate_backend(???);
   ```
-- ### *⭐ Notice : 刪除表格*
+- ### *⭐ Notice : 刪除表格資料*
   ```
   # TRUNCATE 是 DDL 指令，它不記錄每一行的刪除，而是直接把資料檔案「截斷」歸零
   # TRUNCATE 速度比 DELETE 快 100 倍以上
   # TRUNCATE 本身不允許刪除被引用的表格，除非加上 CASCADE
   # 加上 CASCADE 會連同那些引用它的子表也一併清空
+  # [ 建議 ] 若要移除表格，可先 TRUNCATE 清空資料，再 DROP 刪除結構
   
   -- 清空資料但保留結構(引用的子表也一併清空)，並重置自增 ID
   TRUNCATE TABLE oltp.table RESTART IDENTITY CASCADE;
