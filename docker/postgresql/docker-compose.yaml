@@ -14,7 +14,6 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-
     restart: unless-stopped
 
   pgadmin:
@@ -29,7 +28,6 @@ services:
       - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
     volumes:
       - pgadmin_data:/var/lib/pgadmin
-
     restart: unless-stopped
 
 volumes:

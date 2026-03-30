@@ -2,13 +2,12 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:16
+    build: .
     container_name: powa-postgres
-    restart: unless-stopped
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: powa
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     ports:
       - '5431:5432'
     volumes:
@@ -22,6 +21,7 @@ services:
       - pg_stat_statements.track=all
       - -c
       - track_io_timing=on
+    restart: unless-stopped
 
   powa-web:
     image: powateam/powa-web:latest
@@ -33,7 +33,8 @@ services:
     environment:
       POWA_SERVER_HOST: postgres
       POWA_SERVER_PORT: 5432
-      POWA_SERVER_DBNAME: powa
+      POWA_SERVER_DBNAME: ${POSTGRES_DB}
+    restart: unless-stopped
 
 volumes:
   powa_data:
