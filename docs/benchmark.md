@@ -33,8 +33,8 @@
 - #### *OLTP*
 |**Name**|**Type**|**Streaming**|**Description**|**Remark**|
 |--:|:--:|:--:|:--:|:--:|
-| machines | 靜態 | - | 儲存機台基本資訊 | ⚠️預處理 |
-| products | 靜態 | - | 儲存產品基本資訊 | ⚠️預處理 |
+| machines | 靜態 | - | 機台基本資訊 | ⚠️預處理 |
+| products | 靜態 | - | 產品基本資訊 | ⚠️預處理 |
 | 🗑️ machine_events | 動態 | 低頻 | 記錄機台運行過程中的各類事件 | - |
 | machine_status_logs | 動態 | 低頻 | 持續記錄機台狀態變化 | - |
 | production_orders | 動態 | 低頻 | 記錄生產訂單資訊 | - |

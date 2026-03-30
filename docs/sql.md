@@ -1,7 +1,7 @@
 ### *A.1.　Table Description*
 - #### *OLTP*
   |**Name**|**Description**|**Remark**|
-  |--:|:--:|:--:|
+  |--:|:--|:--|
   | machines | 儲存機台基本資訊，例如機台編號、機台名稱、機台型號、所屬產線等。 | 機台主資料表 |
   | products | 儲存產品基本資訊，例如產品名稱、產品型號與規格。 | 產品主資料表 |
   | 🗑️ machine_events | 記錄機台運行過程中的各類事件，例如故障、維修、警報、重新啟動等事件，用於追蹤設備歷史行為。 | 用於事件追蹤與維修分析 |
@@ -32,7 +32,7 @@
 
 - #### *OLAP*
   |**Name**|**Description**|**Remark**|
-  |--:|:--:|:--:|
+  |--:|:--|:--|
   | dim_machine | 機台維度表，提供機台相關屬性，例如機台名稱、型號、產線等，用於分析時的維度資訊。 | Dimension Table |
   | dim_product | 產品維度表，包含產品名稱、產品類型與其他產品屬性，用於分析生產狀況。 | Dimension Table |
   | dim_time | 時間維度表，將時間拆分為年、月、日、小時等欄位，方便進行時間分析。 | 常見 OLAP 維度 |
@@ -390,6 +390,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
   -- AND schemaname = 'oltp' 
   AND schemaname = 'olap'
   ```
+  
 - ### *⭐ Notice : 轉移表格擁有權限*
   ```
   -- 轉移 oltp.products 擁有權給 oltp_owner
@@ -398,6 +399,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
   -- 轉移 olap.dim_product 擁有權給 olap_owner
   ALTER TABLE olap.dim_product OWNER TO olap_owner;
   ```
+  
 - ### *⭐ Notice : 查詢卡住的 PID 並殺掉*
   ```
   -- 查詢正在執行的 SQL，找出卡在 target_table 的 PID
@@ -410,13 +412,14 @@ CREATE SCHEMA IF NOT EXISTS olap;
   -- 強制結束該查詢
   SELECT pg_terminate_backend(???);
   ```
+  
 - ### *⭐ Notice : 刪除表格資料*
   ```
-  # TRUNCATE 是 DDL 指令，它不記錄每一行的刪除，而是直接把資料檔案「截斷」歸零
-  # TRUNCATE 速度比 DELETE 快 100 倍以上
-  # TRUNCATE 本身不允許刪除被引用的表格，除非加上 CASCADE
-  # 加上 CASCADE 會連同那些引用它的子表也一併清空
-  # [ 建議 ] 若要移除表格，可先 TRUNCATE 清空資料，再 DROP 刪除結構
+  -- TRUNCATE 是 DDL 指令，它不記錄每一行的刪除，而是直接把資料檔案「截斷」歸零
+  -- TRUNCATE 速度比 DELETE 快 100 倍以上
+  -- TRUNCATE 本身不允許刪除被引用的表格，除非加上 CASCADE
+  -- 加上 CASCADE 會連同那些引用它的子表也一併清空
+  -- [ 建議 ] 若要移除表格，可先 TRUNCATE 清空資料，再 DROP 刪除結構
   
   -- 清空資料但保留結構(引用的子表也一併清空)，並重置自增 ID
   TRUNCATE TABLE oltp.table RESTART IDENTITY CASCADE;
@@ -427,6 +430,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
   -- 慎用 ! 會逐行刪除資料，速度慢，且可能導致鎖表
   DELETE FROM oltp.table; 
   ```
+  
 - ### *⭐ Migration User : 建表時要切換角色*
   ```
   -- 1. 切換身分
@@ -443,6 +447,28 @@ CREATE SCHEMA IF NOT EXISTS olap;
   -- 4. [ 可選 ] 操作完畢後切回原始身分
   RESET ROLE;
   ```
+  
+- ### *OLTP : 查詢生產完畢的訂單*
+  ```
+  SELECT *
+  FROM oltp.production_orders
+  WHERE 1=1
+  -- AND start_at IS NULL
+  -- AND start_at IS NOT NULL
+  AND end_at IS NOT NULL
+  ORDER BY created_at DESC
+  ```
+
+- ### *OLTP : 查詢指定機台生產狀況*
+  ```
+  SELECT *
+  FROM oltp.machine_status_logs
+  WHERE 1=1
+  AND machine_id = 331
+  -- AND status = 'ALARM'
+  ORDER BY event_time ASC
+  ```
+
 - ### *OLAP : 每台機器運行時間*
   ```
   SELECT
@@ -461,6 +487,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     AND f.status = 'RUNNING'
   GROUP BY m.machine_name, t.year, t.month;
   ```
+  
 - ### *OLAP : 每個產品產量*
   ```
   SELECT
