@@ -1,25 +1,30 @@
 ### *A.　Event Description*
 ```
-工廠情境：
-  - 定義機台 machines
-  - 定義訂單 products
-  - 生產訂單 production_orders <- [products]
-  - 機台狀態 machine_status_logs
-  - 生產產出 production_records <- [production_orders, machines, products]
+# 以製造工廠為主題情境
+  - 定義機台 [mach] : machines
+  - 定義訂單 [prod] : products
+  - 生產訂單 [prod_order] : production_orders <- [products]
+  - 機台狀態 [mach_st_log] : machine_status_logs
+  - 生產產出 [prod_recd] : production_records <- [production_orders, machines, products]
 
- CREATE ORDER
+
+   建立訂單 [prod_order]
       │
       ▼
-   開始生產
+   開始生產 [prod_order.start_at]
       │
       ▼
-   持續產生 production_records
+  狀態發生變化 [mach_st_log.status]
+      ▲
       │
       ▼
-   達到 order.quantity
+   持續生產 [prod_recd.quantity]
       │
       ▼
-ORDER COMPLETE
+    達到 [prod_order.quantity]
+      │
+      ▼
+   完成訂單 [prod_order.end_at]
 ```
 
 <br>
@@ -28,10 +33,10 @@ ORDER COMPLETE
 - #### *OLTP*
 |**Name**|**Type**|**Streaming**|**Description**|**Remark**|
 |--:|:--:|:--:|:--:|:--:|
-| machines | 靜態 | - | 儲存機台基本資訊 | ⚠️ 預處理 |
-| products | 靜態 | - | 儲存產品基本資訊 | ⚠️ 預處理 |
-| production_orders | 動態 | 低頻 | 記錄生產訂單資訊 | - |
+| machines | 靜態 | - | 儲存機台基本資訊 | ⚠️預處理 |
+| products | 靜態 | - | 儲存產品基本資訊 | ⚠️預處理 |
 | 🗑️ machine_events | 動態 | 低頻 | 記錄機台運行過程中的各類事件 | - |
+| production_orders | 動態 | 低頻 | 記錄生產訂單資訊 | - |
 | machine_status_logs | 動態 | 低頻 | 持續記錄機台狀態變化 | - |
 | production_records | 動態 | 高頻 | 記錄實際生產結果 | - |
 
@@ -56,23 +61,6 @@ Production records:  500
 Machine events:      100
 
 
-# Load → TPS
-    OFF_PEAK
-    status logs : 2/sec
-    production  : 1/sec
-    events      : 0.2/sec
-    
-    NORMAL
-    status logs : 6/sec
-    production  : 3/sec
-    events      : 1/sec
-    
-    PEAK
-    status logs : 15/sec
-    production  : 8/sec
-    events      : 3/sec
-
-
 # OLTP TPS
 OFF_PEAK : ~3/sec
 NORMAL   : ~10/sec
@@ -85,7 +73,6 @@ PEAK     : ~25/sec
 | machine_status_logs | ~200k    |
 | production_records  | ~80k     |
 | machine_events      | ~10k     |
-
 ```
 
 <br>
