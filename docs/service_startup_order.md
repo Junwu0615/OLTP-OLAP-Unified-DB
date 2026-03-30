@@ -61,17 +61,39 @@
 - #### *a.　背景啟動*
   ```
   docker compose up -d --build
+  
+  docker-compose up -d --build powa-postgres powa-web
+  
+  docker-compose up -d powa-postgres
+  docker-compose up -d powa-web
   ```
-- #### *b.　確認擁有角色權限*
+- #### *b.　確認擁有角色權限 + Schema 是否建立*
   ```
   # 進入容器
   docker exec -it powa-postgres psql -U postgres -d powa
   
   # 確認角色權限
   \du
+  
+  # 確認 schema
+  \dn
   ```
 - #### *c.　檢查 Extensions*
   ```
   \dx
-  # 應該要有 (4 rows) : [btree_gist, pg_stat_statements, plpgsql, powa]
+  # 應該要有 (5 rows) : [pg_stat_statements, btree_gist, hypopg, plpgsql, powa]
+  ```
+- #### *d.　確保已經建立 Server*
+  ```
+  SELECT * FROM powa_servers;
+  ```
+- #### *e.　測試 Web 使用者能登入 sql*
+  ```
+  docker exec -it powa-postgres psql -U powa -d powa
+  ```
+- #### *f.　Web UI 登入資訊*
+  ```
+  username : powa
+  password : powa
+  server   : powa-db
   ```
