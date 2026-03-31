@@ -143,14 +143,23 @@ PEAK     : ~25/sec
   analytic workload
   
   觀察 :
-  TPS drop
-  latency spike
+  OLTP TPS drop
+  OLAP latency spike
   buffer cache eviction
   IO contention
   
   常見 benchmark :
   ⭐ CH-BenCHmark
   ```
+
+- ### *Test process*
+  | **Step** | **Description** |
+  | :--: | :-- |
+  | 1 | Query Benchmark |
+  | 2 | OLTP Workload Benchmark |
+  | 3 | OLAP Workload Benchmark |
+  | 4 | HTAP Workload Benchmark |
+  | 5 | Saturation Benchmark |
 
 <br>
 
