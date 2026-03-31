@@ -265,13 +265,43 @@
   ### 觀察指標：
     - TPS 頂峰：在哪個連線數下，TPS 不再增長？
     - 延遲暴增：在哪個點開始，latency average 突破 100ms？
-  ### 階梯式加壓： 將 clients 分別設為 50, 100
+  ### 階梯式加壓： 將 clients 分別設為 [30, 50, 100]
   
   
   ### ACTION 1 ⬇️
-  docker exec -it postgres_sql_container pgbench -c 50 -j 8 -T 60 -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
+  docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 60 -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
   ### RETURN 1 ⬇️
+  transaction type: multiple scripts
+  scaling factor: 50
+  query mode: simple
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 60 s
+  number of transactions actually processed: 83749
+  number of failed transactions: 0 (0.000%)
+  latency average = 21.494 ms
+  initial connection time = 9.350 ms
+  tps = 1395.744274 (without initial connection time)
+  SQL script 1: <builtin: TPC-B (sort of)>
+   - weight: 9 (targets 90.0% of total)
+   - 75291 transactions (89.9% of total, tps = 1254.784918)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 20.668 ms
+   - latency stddev = 9.159 ms
+  SQL script 2: /tmp/olap_benchmark.sql
+   - weight: 1 (targets 10.0% of total)
+   - 8458 transactions (10.1% of total, tps = 140.959356)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 13.022 ms
+   - latency stddev = 3.287 ms
+  
+  
+  ### ACTION 2 ⬇️
+  docker exec -it postgres_sql_container pgbench -c 50 -j 8 -T 60 -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
+  
+  ### RETURN 2 ⬇️
   transaction type: multiple scripts
   scaling factor: 50
   query mode: simple
@@ -298,10 +328,10 @@
    - latency stddev = 5.160 ms
   
   
-  ### ACTION 2 ⬇️
+  ### ACTION 3 ⬇️
   docker exec -it postgres_sql_container pgbench -c 100 -j 8 -T 60 -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
-  ### RETURN 2 ⬇️
+  ### RETURN 3 ⬇️
   transaction type: multiple scripts
   scaling factor: 50
   query mode: simple
@@ -328,10 +358,47 @@
    - latency stddev = 7.684 ms
   ```
 
-| **Evaluation** | **50 Clients ( Medium-load )** | **100 Clients ( High-load )** | **Trend** |
-| :--: | :--: | :--: | :--: |
-| AVG TPS | 1363 | 1356 | -0.5% |
-| AVG Latency ( ms ) | 36.6 | 73.7 | +101% |
-| Conn Overhead ( ms ) | 13.1 | 95.2 | +626% |
+  | **Evaluation** | **30 Clients ( Sweet Spot )** | **50 Clients ( Medium-load )** | **100 Clients ( High-load )** | **Trend ( 30 vs 100 )** |
+  | :--: | :--: | :--: | :--: | :--: |
+  | AVG TPS | 1395 | 1363 | 1356 | -2.8% |
+  | AVG Latency ( ms ) | 21.4 | 36.6 | 73.7 | +244% |
+  | OLTP Std Dev ( ms ) | 9.15 | 16.11 | 39.62 | +332% |
+  | OLAP Std Dev ( ms ) | 3.28 | 5.16 | 7.68 | +134% |
+  | Conn Overhead ( ms ) | 9.3 | 13.1 | 95.2 | +923% |
+
+  ```
+  ### DESCRIPTION ⬇️
+  1. TPS 停滯：當連線數從 50 增加到 100，總吞吐量不但沒有增加，反而微幅下降。
+     這代表增加再多的人來排隊，資料庫每秒能處理的量已經到頂了。
+  - 原因： TPS 從 1363 掉到 1356，這 0.5% 的跌幅看似微小，但其實是系統封閉的訊號。
+    這代表資料庫的 CPU 或磁碟 I/O 已經 100% 滿載。增加連線數不再產生更多價值，只會換來無意義的等待。
+
+  
+  2. 延遲翻倍：這就是典型的「打架」訊號。處理能力沒變，但排隊的人變多，導致每個人等待的時間直接翻倍。
+  
+  
+  3. 抖動率 (Std Dev / Latency)： 在 100 Clients 下，OLTP 的標準差高達 39.62 ms，
+     對比平均延遲 73.7 ms，這意味著有些交易可能在 30ms 內完成，但有些卻要等到 150ms 以上。
+  - 原因： 典型的 Lock Contention (鎖競爭)。因為 TPC-B 會頻繁更新同一幾張小表
+   （如 pgbench_branches），當 100 個人同時要搶同一個 Data Block 的寫入權時，排隊時間變得很不可控。
+   
+   
+  4. OLAP 竟然比 OLTP 穩定？ 發現 OLAP 的延遲 (22.1ms) 遠低於 OLTP (71.6ms)，且標準差極小。
+  - 原因： 說明你的 production_records 索引非常健康，且查詢是 唯讀 (Read-only)。
+    在 PostgreSQL 中，讀取不會被讀取擋住，所以 OLAP 查詢像是在專用車道上跑，而 OLTP 則在收費站（寫入鎖）前塞車。
+    
+  
+  5. 連線成本的「非線性」暴增 (+626%) 現象：initial connection time 從 13ms 噴到 95ms。
+  - 原因： 這是最危險的訊號。這代表 PostgreSQL 的 Process Forking ( 進程建立 ) 機制遇到了瓶頸。
+    每建立一個新連線，操作系統都要分配記憶體和切換上下文 ( Context Switch ) 。
+    在 100 Clients 時，OS 處理連線的壓力已經快要蓋過處理資料的壓力了。
+    
+    
+  ### OPTIMIZATION PLAN ⬇️
+  1. 引入 Connection Pool (連線池) : 目前的連線開銷 (95ms) 太大。如果加入 PgBouncer，即使維持 100 Clients，
+     initial connection time 可能會降回 < 5ms，總 TPS 有機會突破 1500。
+  
+  2. 可重新設計架構，將讀寫分離，讓 OLTP 與 OLAP 各自有專屬的資料庫實例，完全避免鎖競爭與資源爭用。
+  ```
 
 <br>
