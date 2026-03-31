@@ -22,6 +22,9 @@
 
 ### *Settings Before Action*
 ```
+-- 從 Docker-Desktop 移進 WSL2
+
+
 -- 避免高並發時崩潰
 -- TPS: 穩定性提升
 docker-compose setting shm_size
@@ -53,6 +56,10 @@ docker exec -it postgres_sql_container psql -U pguser -d pgdatabase
 SHOW shared_buffers;
 SHOW work_mem;
 SHOW synchronous_commit;
+
+
+-- 持續監控容器資源使用狀況
+docker stats postgres_sql_container --no-stream
 ```
 
 <br>
@@ -125,6 +132,12 @@ SHOW synchronous_commit;
   
   ### ACTION 3 ⬇️
   docker exec -it postgres_sql_container pgbench -c 100 -j 8 -T 60 -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
+  
+  # ⚠️ 使用 -M prepared (預編譯語句) 可以減少 SQL 解析時間，通常能提升 10-20% TPS
+  docker exec -it postgres_sql_container pgbench -c 100 -j 8 -T 60 -M prepared -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
+  
+  # ⚠️ 使用 -b select-only (只執行 SELECT 查詢) 可以減少寫入操作的鎖競爭，通常能提升 20-50% TPS，特別是在高併發情況下
+  docker exec -it postgres_sql_container pgbench -c 100 -j 8 -T 60 -b select-only@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
   ### RETURN 3 ⬇️
   transaction type: multiple scripts

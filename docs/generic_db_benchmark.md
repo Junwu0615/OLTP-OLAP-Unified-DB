@@ -63,4 +63,7 @@
 - #### *[shm_size : 64 MB - Benchmark Result](../docs/generic_result_1.md)*
 - #### *[shm_size : 16 GB - Benchmark Result](../docs/generic_result_2.md)*
 
+- ![PNG](../assets/baseline_1.png)
+- ![PNG](../assets/baseline_2.png)
+
 <br>

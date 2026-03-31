@@ -62,8 +62,9 @@
   ```
   ### INITIALIZE ONCE ⬇️
    -s 1: 約 10 萬筆資料
-   ⭐ -s 50: 約 500 萬筆資料
-  docker exec -it postgres_sql_container pgbench -i -s 50 -U pguser -d pgdatabase
+   -s 50: 約 500 萬筆資料
+   ⭐ -s 500: 約 5000 萬筆資料
+  docker exec -it postgres_sql_container pgbench -i -s 500 -U pguser -d pgdatabase
   
   
   ### ACTION ⬇️
