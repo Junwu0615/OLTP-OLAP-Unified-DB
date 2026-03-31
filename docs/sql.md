@@ -1,5 +1,5 @@
 ### *A.1.　Table Description*
-- #### *OLTP*
+- #### *a.　OLTP*
   |**Name**|**Description**|**Remark**|
   |--:|:--|:--|
   | machines | 儲存機台基本資訊，例如機台編號、機台名稱、機台型號、所屬產線等。 | 機台主資料表 |
@@ -30,7 +30,7 @@
      └──────── machine_status_logs
   ```
 
-- #### *OLAP*
+- #### *b.　OLAP*
   |**Name**|**Description**|**Remark**|
   |--:|:--|:--|
   | dim_machine | 機台維度表，提供機台相關屬性，例如機台名稱、型號、產線等，用於分析時的維度資訊。 | Dimension Table |
@@ -118,8 +118,8 @@ CREATE SCHEMA IF NOT EXISTS olap;
 | owner | `oltp_owner` / `olap_owner` | ❌ | 擁有 schema / table / view | 🟡 |
 | user | `oltp_user` / `olap_user` | ✔ | CRUD 資料操作 | 🟢 |
 
-- ### *C.1.　Create Role*
-  - #### *C.1.1.　OLTP Role*
+- ### *1.　Create Role*
+  - #### *1.1.　OLTP Role*
     ```
     -- oltp_owner: 擁有者權限 + 不允許登入
     CREATE ROLE oltp_owner NOLOGIN;
@@ -127,7 +127,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     -- oltp_user: 讀/寫權限
     CREATE ROLE oltp_user LOGIN PASSWORD 'oltp_pwd';
     ```
-  - #### *C.1.2.　OLTP Role*
+  - #### *1.2.　OLTP Role*
     ```
     CREATE ROLE migration_user LOGIN PASSWORD 'xxx';
     -- olap_owner: 擁有者權限 + 不允許登入
@@ -136,13 +136,13 @@ CREATE SCHEMA IF NOT EXISTS olap;
     -- olap_user: 只讀權限
     CREATE ROLE olap_user LOGIN PASSWORD 'olap_pwd';
     ```
-  - #### *C.1.3.　Migration Role*
+  - #### *1.3.　Migration Role*
     ```
     -- migration_user: 允許使用 owner 權限
     CREATE ROLE migration_user LOGIN PASSWORD 'migration_pwd';
     ```
-- ### *C.2.　Schema 權限隔離*
-  - #### *C.2.1.　OLTP Role*
+- ### *2.　Schema 權限隔離*
+  - #### *2.1.　OLTP Role*
     ```
     -- 1. 確保 oltp_owner 為 oltp schema 擁有者
     ALTER SCHEMA oltp OWNER TO oltp_owner;
@@ -162,7 +162,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     ALTER DEFAULT PRIVILEGES FOR ROLE oltp_owner IN SCHEMA oltp
     GRANT USAGE, SELECT ON SEQUENCES TO oltp_user;
     ```
-  - #### *C.2.2.　OLAP Role*
+  - #### *2.2.　OLAP Role*
     ```
     -- 1. 確保 olap_owner 為 olap schema 擁有者
     ALTER SCHEMA olap OWNER TO olap_owner;
@@ -186,7 +186,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     GRANT USAGE ON SCHEMA oltp TO olap_user;
     GRANT SELECT ON ALL TABLES IN SCHEMA oltp TO olap_user;
     ```
-  - #### *C.2.3.　Migration Role*
+  - #### *2.3.　Migration Role*
     ```
     -- 1. 角色關係與繼承
     GRANT oltp_owner TO migration_user;
@@ -206,13 +206,13 @@ CREATE SCHEMA IF NOT EXISTS olap;
     ALTER DEFAULT PRIVILEGES FOR ROLE migration_user IN SCHEMA olap
     GRANT ALL ON TABLES TO olap_owner;
     ```
-  - #### *C.2.4.　Remove Public Role 預設權限*
+  - #### *2.4.　Remove Public Role 預設權限*
     ```
     REVOKE ALL ON SCHEMA oltp FROM PUBLIC;
     REVOKE ALL ON SCHEMA olap FROM PUBLIC;
     ```
 
-- ### *C.3.　設定 Default Schema*
+- ### *3.　設定 Default Schema*
   ```
   ALTER ROLE oltp_owner
   SET search_path = oltp;
@@ -227,7 +227,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
   SET search_path = olap;
   ```
   
-- ### *C.4.　設定使用時區*
+- ### *4.　設定使用時區*
   ```
   -- 數據保持 +0 時區 ; 讀取操作顯示 +8 時區
   -- 1. 任何連線進來的用戶，如果沒有額外設定，則顯示+8
@@ -242,8 +242,8 @@ CREATE SCHEMA IF NOT EXISTS olap;
   ALTER ROLE olap_user SET timezone TO 'Asia/Taipei';
   ```
 
-- ### *C.5.　設定使用者資源使用上限 ( 避免屎 SQL 拖垮整個實例 )*
-  - #### *⭐ C.5.1.　Query 執行時間限制*
+- ### *5.　設定使用者資源使用上限 ( 避免屎 SQL 拖垮整個實例 )*
+  - #### *⭐ 5.1.　Query 執行時間限制*
     ```
     -- 避免使用者寫出無限迴圈的 SQL，或是拖垮整個實例的 SQL
     -- statement_timeout: query 最長執行時間 → 自動 kill query
@@ -256,7 +256,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     SET statement_timeout = '60s';
     ```
 
-  - #### *C.5.2.　Query planning 限制*
+  - #### *5.2.　Query planning 限制*
     ```
     -- lock_timeout: 等鎖最長時間 → 直接失敗
   
@@ -267,7 +267,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     SET lock_timeout = '10s';
     ```
 
-  - #### *C.5.3.　idle 連線限制*
+  - #### *5.3.　idle 連線限制*
     ```
     -- idle_in_transaction_session_timeout: 忘記 commit 的 session → kill session
   
@@ -278,7 +278,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     SET idle_in_transaction_session_timeout = '60s';
     ```
 
-  - #### *⭐ C.5.4.　Memory 限制*
+  - #### *⭐ 5.4.　Memory 限制*
     ```
     -- 避免一個 query 吃爆 RAM 
     -- 最常拖垮系統的原因就是 work_mem 設定過大 → 大量資料排序/聚合 → 吃爆記憶體 → 整個實例當掉
@@ -290,7 +290,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     SET work_mem = '64MB';
     ```
 
-  - #### *C.5.5.　Parallel query 限制*
+  - #### *5.5.　Parallel query 限制*
     ```
     -- Parallel 只有在 large scan / aggregation 才有用
   
@@ -301,7 +301,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     SET max_parallel_workers_per_gather = 2;
     ```
 
-  - #### *⭐ C.5.6.　連線數限制*
+  - #### *⭐ 5.6.　連線數限制*
     ```
     -- 直接限制 user 連線數
   
@@ -312,7 +312,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     CONNECTION LIMIT 5;
     ```
 
-  - #### *⭐ C.5.7.　temp file 限制*
+  - #### *⭐ 5.7.　temp file 限制*
     ```
     -- temp_file_limit: query 可用 disk 上限
     -- 避免 query 做大量 sort / hash 吃爆磁碟空間, 導致整個實例當掉 
@@ -327,7 +327,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
 <br>
 
 ### *D.　Create Table & Index Settings*
-- ### *D.1.　Create Table List*
+- ### *1.　Create Table List*
   ```
   oltp.machine_events
   oltp.machine_status_logs
@@ -344,7 +344,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
   ```
   ![PNG](../assets/all_table.png)
 
-- ### *⭐ D.2.　Index 加速查詢*
+- ### *⭐ 2.　Index 加速查詢*
   ```
   # 索引是透過「空間換取時間」，讓資料庫從漫無目的的搜尋，進化為有邏輯的快速定位。
     # 創建目的: 為常見查詢模式服務

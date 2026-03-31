@@ -75,60 +75,66 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 <br>
 
-### *B.1.　Service List*
-|**Service**|**Description**|**Port**|
-|:--:|:--:|:--:|
-| PostgreSQL | for `Dev` | [5432](http:127.0.0.1:5432) |
-| PostgreSQL | for `Airflow` | [5433](http:127.0.0.1:5433) |
-| PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
-| Airflow | - | [8080](http:127.0.0.1:8080) |
-| PostgreSQL | for `PoWA`<br>防屎 SQL 神器 | [5431](http:127.0.0.1:5431) |
-| PoWA UI Web | - | [8888](http:127.0.0.1:8888) |
+### *B.　Service*
+- #### *1.　Service List*
+  |**Service**|**Description**|**Port**|
+  |:--:|:--:|:--:|
+  | PostgreSQL | for `Dev` | [5432](http:127.0.0.1:5432) |
+  | PostgreSQL | for `Airflow` | [5433](http:127.0.0.1:5433) |
+  | PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
+  | Airflow | - | [8080](http:127.0.0.1:8080) |
+  | PostgreSQL | for `PoWA`<br>防屎 SQL 神器 | [5431](http:127.0.0.1:5431) |
+  | PoWA UI Web | - | [8888](http:127.0.0.1:8888) |
 
-### *B.2.　[Service Startup Order](./docs/service_startup_order.md)*
+- #### *2.　[Service Startup Order](./docs/service_startup_order.md)*
 
-
-<br>
-
-### *C.1.　Implementation Roadmap*
-```
-# 待生成完整流程圖
-
-1. [Schema Design]
-         ↓
-2. [Data Generator]
-         ↓
-3. [OLTP Schema (3NF)]
-         ↓
-4. [ETL] # ETL : Extract → Transform → Load
-         ↓
-5. [OLAP Schema (Star Schema)]
-         ↓
-6. [Analytical Queries]
-         ↓
-7. [Benchmark & Metrics]
-```
-
-### *C.2.　[About SQL Something Detail](./docs/sql.md)*
-
-### *C.3.　[Generic DB Benchmark](./docs/generic_db_benchmark.md)*
-
-### *C.4.　[Workload Benchmark](./docs/workload_benchmark.md)*
 
 <br>
 
-### *D.　Notice*
+### *C.　Implementation*
+- #### *1.　Roadmap*
+  ```
+  # 待生成完整流程圖
+  
+  1. [Schema Design]
+           ↓
+  2. [Data Generator]
+           ↓
+  3. [OLTP Schema (3NF)]
+           ↓
+  4. [ETL] # ETL : Extract → Transform → Load
+           ↓
+  5. [OLAP Schema (Star Schema)]
+           ↓
+  6. [Analytical Queries]
+           ↓
+  7. [Benchmark & Metrics]
+  ```
+
+- #### *2.　[About SQL Something Detail](./docs/sql.md)*
+
+<br>
+
+### *D.　Benchmark*
+| **Type** | **Objective** | **Methods** |
+| :--: | :--: | :--: |
+| *[Generic DB Benchmark](./docs/generic_db_benchmark.md)* | 找資料庫極限    | 內建工具 |
+| *[Workload Benchmark](./docs/workload_benchmark.md)* | 找「指定系統」瓶頸 | 自訂腳本 |
+
+<br>
+
+### *E.　Notice*
 - #### *⭐ 欲真正解決 OLTP / OLAP 衝突，詳見[另一解法](https://github.com/Junwu0615/OLTP-To-OLAP-Pipeline)*
-- #### *a.　OLTP　VS.　OLAP　VS.　HTAP*
+- #### *1.　OLTP　VS.　OLAP　VS.　HTAP*
   | **Type** | **Core Objectives** | **Design Philosophy** | **Data Model** | **Query Features** |
   |:--:|:--:|:--:|:--:|:--:|
   | OLTP | 快速且正確地處理`交易` | 一致性優先 | [ 正規化 ]<br>3NF | 單筆查詢、低延遲 |
   | OLAP | 高效`分析`大量資料 | 查詢效率優先 | [ 非正規化 ]<br>Star Schema / Wide Table | 聚合分析、大量掃描 |
   | HTAP | 同時支援`交易`與`分析` | 負載平衡 | 混合模型 | 即時分析 + 交易 |
-- #### *b.　若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
+- #### *2.　若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
   - #### *優 : `限制權限`, `分開 Connection Pool`, `分開 Query Routing`*
   - #### *劣 : `CPU / IO 共用`，它們還是彼此搶資源*
-- #### *c.　Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
+- #### *3.　Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
   - #### *還是同一個 CPU*
   - #### *還是同一個 Disk*
   - #### *還是同一個 Buffer Cache*

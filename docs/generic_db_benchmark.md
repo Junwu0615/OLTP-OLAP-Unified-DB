@@ -1,5 +1,5 @@
 ### *A.　Benchmark Methods*
-- ### *a.1　OLTP 壓力測試 ( Write )*
+- ### *1.　OLTP 壓力測試 ( Write )*
   ```
   測試特徵 :
   大量 INSERT / UPDATE
@@ -22,7 +22,7 @@
   常見 benchmark :
   TPC-C
   ```
-- ### *a.2　OLAP 壓力測試 ( Read )*
+- ### *2.　OLAP 壓力測試 ( Read )*
   ```
   測試特徵 :
   大量 SELECT
@@ -41,7 +41,7 @@
   ⭐ TPC-H
   TPC-DS
   ```
-- ### *a.3　HTAP 壓力測試 ( Mix )*
+- ### *3.　HTAP 壓力測試 ( Mix )*
   ```
   同時跑 :
   transaction workload
@@ -68,9 +68,9 @@
   | 4 | HTAP Workload Benchmark | - |
   | 5 | Saturation Benchmark | - |
 
-- ### *b.1.　Query Benchmark*
+- ### *1.　Query Benchmark*
 
-- ### *b.2.　OLTP Workload Benchmark*
+- ### *2.　OLTP Workload Benchmark*
   ```
   -- c: client 數量
   -- j: thread 數量
@@ -82,10 +82,10 @@
   -T 300 \
   postgres
   ```
-- ### *b.3.　OLAP Workload Benchmark*
+- ### *3.　OLAP Workload Benchmark*
 
-- ### *b.4.　HTAP Workload Benchmark*
+- ### *4.　HTAP Workload Benchmark*
 
-- ### *b.5.　Saturation Benchmark*
+- ### *5.　Saturation Benchmark*
 
 <br>
