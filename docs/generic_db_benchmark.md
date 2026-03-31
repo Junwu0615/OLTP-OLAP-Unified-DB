@@ -62,11 +62,11 @@
 ### *B.　Generic DB Benchmark*
 | **Step** | **Description** | **Tool** |
 | :--: | :-- | :--: |
-| 1 | Query Benchmark | direct query method |
-| 2 | OLTP Workload Benchmark | use pgbench by docker |
-| 3 | OLAP Workload Benchmark | use pgbench by docker |
-| 4 | HTAP Workload Benchmark | use pgbench by docker |
-| 5 | Saturation Benchmark | use pgbench by docker |
+| [1](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_db_benchmark.md#1query-benchmark) | Query Benchmark | direct query method |
+| [2](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_db_benchmark.md#2oltp-workload-benchmark) | OLTP Workload Benchmark | use pgbench by docker |
+| [3](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_db_benchmark.md#3olap-workload-benchmark) | OLAP Workload Benchmark | use pgbench by docker |
+| [4](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_db_benchmark.md#4htap-workload-benchmark) | HTAP Workload Benchmark | use pgbench by docker |
+| [5](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_db_benchmark.md#5saturation-benchmark) | Saturation Benchmark | use pgbench by docker |
 
 - #### *1.　Query Benchmark*
   ```
