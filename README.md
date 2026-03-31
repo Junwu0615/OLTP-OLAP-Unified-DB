@@ -63,7 +63,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Try Again PoWA Web | ⚠️very difficult to deal with | 2026-03-30 |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
-| Design Benchmark | - | 2026-03-31 |
+| Design Benchmark | two testing methods | 2026-03-31 |
 | OLTP to OLAP By ETL | - | - |
 | Analytical Queries | - | - |
 | Multi-Instance Simulate | - | - |
@@ -111,7 +111,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 ### *C.2.　[About SQL Something Detail](./docs/sql.md)*
 
-### *C.3.　[Benchmark](./docs/benchmark.md)*
+### *C.3.　[Generic DB Benchmark](./docs/generic_db_benchmark.md)*
+
+### *C.4.　[Workload Benchmark](./docs/workload_benchmark.md)*
 
 <br>
 
