@@ -19,11 +19,11 @@ services:
     command: >
       postgres
       -c shared_buffers=10GB
-      -c work_mem=128MB # 100 * 128MB = 12.5GB
+      -c work_mem=128MB
       -c maintenance_work_mem=512MB
       -c synchronous_commit=off
       -c checkpoint_completion_target=0.9
-      -c max_connections=300
+      -c max_connections=100
     restart: unless-stopped
 
   pgadmin:

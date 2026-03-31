@@ -25,17 +25,20 @@
 -- TPS: 穩定性提升
 docker-compose setting shm_size
 
+
 -- 提升快取與工作記憶體
 -- 減少實體 IO 讀取
 -- TPS: +20% ~ 50%
-ALTER ROLE pguser SET shared_buffers = '1GB';
-ALTER ROLE pguser SET work_mem = '64MB';
+ALTER ROLE pguser SET shared_buffers = '10GB';
+ALTER ROLE pguser SET work_mem = '128MB'; # 100(conn) * 128(MB) = 12.5(GB)
+
 
 -- 暴力提升寫入吞吐量 (實驗專用)
 -- 消除 WAL 寫入延遲
 -- TPS: +100% ~ 300%
 ALTER ROLE pguser SET synchronous_commit = 'off';
 ALTER ROLE pguser SET checkpoint_completion_target = '0.9';
+
 
 -- 允許更多背景工作人員處理 OLAP
 -- 充分利用多核心 CPU
