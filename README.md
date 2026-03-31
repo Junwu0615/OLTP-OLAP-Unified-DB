@@ -64,6 +64,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Try Again PoWA Web | ⚠️very difficult to deal with | 2026-03-30 |
 | Design Benchmark | two testing methods | 2026-03-31 |
 | Generic DB Benchmark | - | 2026-03-31 |
+| Fine-tuning<br>PostgreSQL Docker Settings | `shm-size` | 2026-04-01 |
 | Workload Benchmark | - | - |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
@@ -119,7 +120,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 ### *D.　Benchmark*
 | **Type** | **Objective** | **Methods** |
 | :--: | :--: | :--: |
-| *[Generic DB Benchmark](./docs/generic_db_benchmark.md)* | 找資料庫極限    | 內建工具 |
+| *[Generic DB Benchmark](./docs/generic_db_benchmark.md)* | 找「資料庫」極限    | 內建工具 |
 | *[Workload Benchmark](./docs/workload_benchmark.md)* | 找「指定系統」瓶頸 | 自訂腳本 |
 
 <br>

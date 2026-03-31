@@ -298,7 +298,7 @@ CREATE SCHEMA IF NOT EXISTS olap;
     SET max_parallel_workers_per_gather = 0;
   
     ALTER ROLE olap_user
-    SET max_parallel_workers_per_gather = 2;
+    SET max_parallel_workers_per_gather = 4;
     ```
 
   - #### *⭐ 5.6.　連線數限制*
