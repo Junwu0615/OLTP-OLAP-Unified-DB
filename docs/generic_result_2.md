@@ -1,4 +1,5 @@
 ## *🪛 shm_size: 16 GB*
+### *Settings ( shared_buffers / work_mem / synchronous_commit )*
 ![PNG](../assets/generic_result_2.png)
 
 <br>
@@ -6,11 +7,11 @@
 ### *Generic DB Benchmark*
 | **Step** | **Description** | **Tool** |
 | :--: | :-- | :--: |
-| [1](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#1query-benchmark) | Query Benchmark | direct query method |
-| [2](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#2oltp-workload-benchmark) | OLTP Workload Benchmark | use pgbench by docker |
-| [3](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#3olap-workload-benchmark) | OLAP Workload Benchmark | use pgbench by docker |
-| [4](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#4htap-workload-benchmark) | HTAP Workload Benchmark | use pgbench by docker |
-| [5](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#5saturation-benchmark) | Saturation Benchmark | use pgbench by docker |
+| [1](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#-skip--1query-benchmark) | Query Benchmark | direct query method |
+| [2](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#-skip--2oltp-workload-benchmark) | OLTP Workload Benchmark | use pgbench by docker |
+| [3](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#3-skip--olap-workload-benchmark) | OLAP Workload Benchmark | use pgbench by docker |
+| [4](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#4-skip--htap-workload-benchmark) | HTAP Workload Benchmark | use pgbench by docker |
+| [5](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#5-skip--saturation-benchmark) | Saturation Benchmark | use pgbench by docker |
 
 <br>
 
