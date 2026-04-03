@@ -262,7 +262,7 @@ docker stats postgres_sql_container --no-stream
 <br>
 
 - #### *Docker Desktop vs. WSL2 ( Pure Read Performance )*
-  | **Evaluation** | **Docker Desktop<br>( Windows 虛擬層 )** | **WSL2<br>( 原生 Linux 核心 )** | **WSL2<br>( 極限測試 )** | **Performance Improvement ( 非極限比較 )** |
+  | **Evaluation** | **Docker Desktop<br>( Windows 虛擬層 )** | **WSL2<br>( 原生 Linux 核心 )** | **WSL2<br>( 極限測試 )** | **Performance Improvement<br>( 非極限比較 )** |
   | :--: | :--: | :--: | :--: | :--: |
   | TPS | 7,499 | 11,577 | 11,764 | + 54.3% |
   | Latency | 4.000 ms | 2.591 ms | 8.500 ms | - 35.2% |
