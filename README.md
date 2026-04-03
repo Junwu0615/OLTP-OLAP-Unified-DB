@@ -87,8 +87,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   | PostgreSQL | for `Airflow` | [5433](http:127.0.0.1:5433) |
   | PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
   | Airflow | - | [8080](http:127.0.0.1:8080) |
-  | PostgreSQL | for `PoWA`<br>防屎 SQL 神器 | [5431](http:127.0.0.1:5431) |
-  | PoWA UI Web | - | [8888](http:127.0.0.1:8888) |
+  | ~~PostgreSQL~~ | for `PoWA` | [5431](http:127.0.0.1:5431) |
+  | ~~PoWA UI Web~~ | - | [8888](http:127.0.0.1:8888) |
 
 - #### *2.　[Service Startup Order](./docs/service_startup_order.md)*
 - #### *3.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*
