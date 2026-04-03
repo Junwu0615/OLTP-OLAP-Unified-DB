@@ -92,6 +92,7 @@ docker stats postgres_sql_container --no-stream
   
   docker exec -it postgres_sql_container pgbench -i -s 500 -U pguser -d pgdatabase
   ```
+- ![PNG](../assets/initialize_data_2.png)
 
 - #### *~~1.　Query Benchmark~~*
 - #### *~~2.　OLTP Workload Benchmark~~*
