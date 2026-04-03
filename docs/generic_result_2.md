@@ -113,6 +113,25 @@ docker stats postgres_sql_container --no-stream
   latency average = 14.205 ms
   initial connection time = 7.322 ms
   tps = 2111.920631 (without initial connection time)
+  
+  
+  ### ACTION 2 ( 測試 純讀取 負載 ) ⬇️
+  docker exec -it postgres_sql_container pgbench -S -c 30 -j 8 -T 300 -U pguser -d pgdatabase
+  
+  
+  ### RETURN 2 ⬇️
+  transaction type: <builtin: select only>
+  scaling factor: 500
+  query mode: simple
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 300 s
+  number of transactions actually processed: 3473412
+  number of failed transactions: 0 (0.000%)
+  latency average = 2.591 ms
+  initial connection time = 7.304 ms
+  ⭐ tps = 11577.754184 (without initial connection time)
   ```
 
 <br>
@@ -221,6 +240,15 @@ docker stats postgres_sql_container --no-stream
    - latency average = 9001.754 ms
    - latency stddev = 666.161 ms
   ```
+
+<br>
+
+- #### *Docker Desktop vs. WSL2 ( Pure Read Performance )*
+  | **Evaluation** | **Docker Desktop<br>( Windows 虛擬層 )** | **WSL2<br>( 原生 Linux 核心 )** | **Performance Improvement** |
+  | :--: | :--: | :--: | :--: |
+  | TPS | 7,499 | 11,577 | + 54.3% |
+  | Latency | 4.000 ms | 2.591 ms | - 35.2% |
+  | Total Transactions | 2.55 million times | 3.47 million times | + 1.22 million times |
 
 <br>
 
