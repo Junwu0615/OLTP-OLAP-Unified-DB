@@ -33,9 +33,11 @@
   docker cp ".\src\sql\scripts\dashboard_benchmark.sql" postgres_sql_container:/tmp/dashboard_benchmark.sql
   docker cp ".\src\sql\scripts\olap_benchmark.sql" postgres_sql_container:/tmp/olap_benchmark.sql
   
+  
   ### 2. 一次性清理 BOM 與 Windows 換行符 (CRLF -> LF) ⬇️
   docker exec -it postgres_sql_container sh -c "sed -i '1s/^\xef\xbb\xbf//; s/\r$//' /tmp/dashboard_benchmark.sql"
   docker exec -it postgres_sql_container sh -c "sed -i '1s/^\xef\xbb\xbf//; s/\r$//' /tmp/olap_benchmark.sql"
+  
   
   ### 3. CHECK SCRIPT ⬇️
   docker exec -it postgres_sql_container cat /tmp/dashboard_benchmark.sql

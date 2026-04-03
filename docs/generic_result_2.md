@@ -7,7 +7,7 @@
 ### *Generic DB Benchmark*
 | **Step** | **Description** | **Tool** |
 | :--: | :-- | :--: |
-| [0](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#0initialize-pgbench-benchmark-data) | Initialize pgbench Benchmark Data | - |
+| [0](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#01initialize-pgbench-benchmark-data) | Initialize pgbench Benchmark Data | - |
 | [1](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#1query-benchmark) | Query Benchmark | direct query method |
 | [2](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#-skip--2oltp-workload-benchmark) | OLTP Workload Benchmark | use pgbench |
 | [3](https://github.com/Junwu0615/OLTP-OLAP-Unified-DB/blob/main/docs/generic_result_2.md#3olap-workload-benchmark) | OLAP Workload Benchmark | use pgbench |
@@ -101,9 +101,11 @@ docker stats postgres_sql_container --no-stream
   docker cp "src/sql/scripts/dashboard_benchmark.sql" postgres_sql_container:/tmp/dashboard_benchmark.sql
   docker cp "src/sql/scripts/olap_benchmark.sql" postgres_sql_container:/tmp/olap_benchmark.sql
   
+  
   ### 2. 一次性清理 BOM 與 Windows 換行符 (CRLF -> LF) ⬇️
   docker exec -it postgres_sql_container sh -c "sed -i '1s/^\xef\xbb\xbf//; s/\r$//' /tmp/dashboard_benchmark.sql"
   docker exec -it postgres_sql_container sh -c "sed -i '1s/^\xef\xbb\xbf//; s/\r$//' /tmp/olap_benchmark.sql"
+  
   
   ### 3. CHECK SCRIPT ⬇️
   docker exec -it postgres_sql_container cat /tmp/dashboard_benchmark.sql
@@ -117,6 +119,7 @@ docker stats postgres_sql_container --no-stream
   ```
   ### ACTION ⬇️
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -b tpcb-like@100 -U pguser -d pgdatabase
+  
   
   ### RETURN ⬇️
   transaction type: <builtin: TPC-B (sort of)>
@@ -139,6 +142,7 @@ docker stats postgres_sql_container --no-stream
   ```
   ### ACTION ⬇️
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -f /tmp/olap_benchmark.sql@100 -U pguser -d pgdatabase
+  
   
   ### RETURN ⬇️
   transaction type: /tmp/olap.sql
@@ -167,6 +171,7 @@ docker stats postgres_sql_container --no-stream
   ```
   ### ACTION 1 ⬇️
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -b tpcb-like@90 -f /tmp/dashboard_benchmark.sql@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
+  
   
   ### RETURN 1 ⬇️
   transaction type: multiple scripts
@@ -204,6 +209,7 @@ docker stats postgres_sql_container --no-stream
   ### ACTION 2 ⬇️
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -M prepared -b tpcb-like@90 -f /tmp/dashboard_benchmark.sql@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
+  
   ### RETURN 2 ⬇️
   transaction type: multiple scripts
   scaling factor: 500
@@ -240,33 +246,33 @@ docker stats postgres_sql_container --no-stream
 <br>
 
 - #### *Performance Comparison of Load Modes*
-| **Load Modes** | **Evaluation ( TPS )** | **Description** |
-| :--: | :--: | :--: |
-| OLTP | 2111 | 高併發小事務，平均延遲僅 14.2 ms |
-| OLAP | 3.9 | 複雜查詢，平均延遲高達 7,622 ms |
-| HTAP | 253.9 | 受到 1% OLAP 查詢的資源佔用影響，總吞吐量大幅下降 |
-
-```
-### DESCRIPTION ⬇️
-# 在混合負載（90% OLTP / 9% Dashboard / 1% OLAP）的場景下，數據呈現明顯的「木桶效應」：
-- OLTP (Layer 1): 表現最穩定，延遲從純負載的 14ms 降至 1.4ms ~ 2ms（因為總請求量受限於長查詢，單次處理速度反而變快）。
-- Near-Real-Time (Layer 2): 提供儀表板使用的中度查詢，延遲落在 270ms ~ 274ms。
-- OLAP (Layer 3): 雖然僅佔 1% 的比例，但其延遲高達 9,000ms+。這 1% 的重量級查詢是拖慢整體 TPS（從 2111 降至 253）的主要原因。
-
-
-# 測試中對比了「簡單查詢 (Simple)」與「預編譯查詢 (Prepared)」對混合負載的影響：
-- TPS 提升: 從 253.9 微幅增加至 257.5 (+1.4%)。
-- OLTP 延遲優化: 在 Prepared 模式下，OLTP 的平均延遲從 2.084ms 降至 1.437ms，優化效果達 31%。
-- 結論: 對於高比例的 OLTP 混合場景，開啟 prepared 模式能顯著降低解析開銷，讓短指令處理更高效。
-
-# 關鍵洞察與建議
-- 資源爭搶明顯: 當 OLAP 佔比僅 1% 時，整體的 TPS 就產生了劇烈下滑。這證明了在單機 PostgreSQL 中執行 HTAP 時，長查詢會產生嚴重的 I/O 或 CPU 鎖定，影響 OLTP 的處理頻率。
-- 延遲落差極大: 最快與最慢的請求延遲相差約 6,000 倍 (1.4ms vs 9,000ms)，這在實務上可能導致連線池（Connection Pool）被長查詢佔滿。
-- 後續建議: 
-    1.  讀寫分離: 考慮引入副本（Replica）處理那 1% 的 OLAP 與 9% 的 Dashboard 請求。
-    2.  資源隔離: 若必須在同一台機器，建議調整 max_parallel_workers 或使用 cgroups 限制背景分析任務的資源。
-    3.  索引優化: 針對 Layer 2 (Dashboard) 的查詢進行特定索引優化，降低其 270ms 的延遲，以釋放更多 worker 給 OLTP 使用。
-```
+  | **Load Modes** | **Evaluation ( TPS )** | **Description** |
+  | :--: | :--: | :-- |
+  | OLTP | 2111 | 高併發小事務，平均延遲僅 14.2 ms |
+  | OLAP | 3.9 | 複雜查詢，平均延遲高達 7,622 ms |
+  | HTAP | 253.9 | 受到 1% OLAP 查詢的資源佔用影響，總吞吐量大幅下降 |
+  
+  ```
+  ### DESCRIPTION ⬇️
+  # 在混合負載（90% OLTP / 9% Dashboard / 1% OLAP）的場景下，數據呈現明顯的「木桶效應」：
+  - OLTP (Layer 1): 表現最穩定，延遲從純負載的 14ms 降至 1.4ms ~ 2ms（因為總請求量受限於長查詢，單次處理速度反而變快）。
+  - Near-Real-Time (Layer 2): 提供儀表板使用的中度查詢，延遲落在 270ms ~ 274ms。
+  - OLAP (Layer 3): 雖然僅佔 1% 的比例，但其延遲高達 9,000ms+。這 1% 的重量級查詢是拖慢整體 TPS（從 2111 降至 253）的主要原因。
+  
+  
+  # 測試中對比了「簡單查詢 (Simple)」與「預編譯查詢 (Prepared)」對混合負載的影響：
+  - TPS 提升: 從 253.9 微幅增加至 257.5 (+1.4%)。
+  - OLTP 延遲優化: 在 Prepared 模式下，OLTP 的平均延遲從 2.084ms 降至 1.437ms，優化效果達 31%。
+  - 結論: 對於高比例的 OLTP 混合場景，開啟 prepared 模式能顯著降低解析開銷，讓短指令處理更高效。
+  
+  # 關鍵洞察與建議
+  - 資源爭搶明顯: 當 OLAP 佔比僅 1% 時，整體的 TPS 就產生了劇烈下滑。這證明了在單機 PostgreSQL 中執行 HTAP 時，長查詢會產生嚴重的 I/O 或 CPU 鎖定，影響 OLTP 的處理頻率。
+  - 延遲落差極大: 最快與最慢的請求延遲相差約 6,000 倍 (1.4ms vs 9,000ms)，這在實務上可能導致連線池（Connection Pool）被長查詢佔滿。
+  - 後續建議: 
+      1.  讀寫分離: 考慮引入副本（Replica）處理那 1% 的 OLAP 與 9% 的 Dashboard 請求。
+      2.  資源隔離: 若必須在同一台機器，建議調整 max_parallel_workers 或使用 cgroups 限制背景分析任務的資源。
+      3.  索引優化: 針對 Layer 2 (Dashboard) 的查詢進行特定索引優化，降低其 270ms 的延遲，以釋放更多 worker 給 OLTP 使用。
+  ```
 
 <br>
 
