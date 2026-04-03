@@ -109,7 +109,10 @@
 - #### *3.　OLAP Workload Benchmark*
   ```
   ### 1. COPY SQL SCRIPT IN CONTAINER ⬇️
+  -- Windows 路徑格式
   docker cp ".\src\sql\scripts\olap_benchmark.sql" postgres_sql_container:/tmp/olap_benchmark.sql
+  -- Linux/MacOS 路徑格式
+  docker cp "src/sql/scripts/olap_benchmark.sql" postgres_sql_container:/tmp/olap_benchmark.sql
   
   ### 2. 一次性清理 BOM 與 Windows 換行符 (CRLF -> LF) ⬇️
   docker exec -it postgres_sql_container sh -c "sed -i '1s/^\xef\xbb\xbf//; s/\r$//' /tmp/olap_benchmark.sql"

@@ -1,7 +1,5 @@
-SELECT machine_id, COUNT(*), AVG(quantity)
-FROM oltp.production_records
-WHERE 1=1
-AND event_time >= '2026-03-01'
-GROUP BY machine_id
-ORDER BY machine_id ASC
-;
+SELECT aid % 10 AS machine_id, COUNT(*), AVG(abalance)
+FROM pgbench_accounts
+WHERE abalance >= 0
+GROUP BY 1
+ORDER BY 1;

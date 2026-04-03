@@ -23,6 +23,24 @@
 ### *Settings Before Action*
 ```
 -- 從 Docker-Desktop 移進 WSL2
+-- 由 /home 使用檔案 + compose up 避免遇到
+  -- 9P 協定瓶頸: 這層通訊開銷極大，比 Windows 本生虛擬化還慢
+  -- I/O 延遲爆炸: 頻繁切換寫入 WAL 和 Data blocks
+mkdir -p ~/OLTP-OLAP-Unified-DB
+cp -r /mnt/c/專案路徑/* ~/OLTP-OLAP-Unified-DB/
+cp -r /mnt/c/Users/PC/Code/Python/Publish-To-Git/OLTP-OLAP-Unified-DB/src ~/OLTP-OLAP-Unified-DB/
+
+
+-- 用 WSL2 確認容器資源限制 ( 預期32 )
+nproc
+
+
+-- 建立 'pgbench_accounts' 索引
+docker exec -it postgres_sql_container psql -U pguser -d pgdatabase -c "
+-- CREATE INDEX idx_accounts_aid_mod10 ON pgbench_accounts ((aid % 10));
+CREATE INDEX idx_ultra_fast ON pgbench_accounts ((aid % 10), abalance);
+ANALYZE pgbench_accounts;
+"
 
 
 -- 避免高並發時崩潰
@@ -71,7 +89,7 @@ docker stats postgres_sql_container --no-stream
 - #### *5.　Saturation Benchmark*
   ```
   ### ACTION 1 ⬇️
-  docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 60 -b tpcb-like@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
+  docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 60 -b tpcb-like@99 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
   ### RETURN 1 ⬇️
   transaction type: multiple scripts
