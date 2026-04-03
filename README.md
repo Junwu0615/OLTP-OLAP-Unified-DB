@@ -30,7 +30,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 ### *A.　Current Progress*
 |**Item**|**Description**|**Time**|
-|:--:|:--|:--:|
+|--:|:--|:--:|
 | Create Project | - | 2026-03-20 |
 | Add PostgreSQL | By Docker | 2026-03-20 |
 | Define Process | - | 2026-03-20 |
@@ -67,7 +67,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Fine-tuning<br>PostgreSQL Docker Settings | `shm-size` | 2026-04-01 |
 | WSL2 Startup Docker Engine | - | 2026-04-03 |
 | Generic DB Benchmark | Design Benchmark-2 | 2026-04-03 |
-| Generic DB Benchmark | 64MB vs 16GB | - |
+| Generic DB Benchmark | Docker Desktop ( 64MB )<br>vs<br>WSL2 ( 16GB ) | 2026-04-04 |
 | Workload Benchmark | - | - |
 | Create OLAP DDL ( 5 ) | Star Schema | - |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |

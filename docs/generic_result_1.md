@@ -44,6 +44,8 @@
   docker exec -it postgres_sql_container cat /tmp/olap_benchmark.sql
   ```
 
+<br>
+
 - #### *1.　Query Benchmark*
   ```
   ### ACTION ⬇️
@@ -87,19 +89,51 @@
   4. 總結：目前資料量下，索引與分區配置完美，幾乎沒有任何延遲。
   ```
 
+<br>
+
 - #### *2.　OLTP Workload Benchmark*
   ```
-  # c: client 數量 / j: thread 數量 / T: 測試秒數
-  ### ACTION ⬇️
+  * c: client 數量 / j: thread 數量 / T: 測試秒數
+  
+  ### ACTION 1 ⬇️
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -b tpcb-like@100 -U pguser -d pgdatabase
   
   
-  ### RETURN ⬇️
+  ### RETURN 1 ⬇️
+  transaction type: <builtin: TPC-B (sort of)>
+  scaling factor: 500
+  query mode: simple
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 300 s
+  number of transactions actually processed: 406106
+  number of failed transactions: 0 (0.000%)
+  latency average = 22.162 ms
+  initial connection time = 7.425 ms
+  tps = 1353.640923 (without initial connection time)
   
   
+  ### ACTION 2 ( 測試 純讀取 負載 ) ⬇️
+  docker exec -it postgres_sql_container pgbench -S -c 30 -j 8 -T 300 -U pguser -d pgdatabase
   
-  ### DESCRIPTION ⬇️
+  
+  ### RETURN 2 ⬇️
+  transaction type: <builtin: select only>
+  scaling factor: 500
+  query mode: simple
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 300 s
+  number of transactions actually processed: 2249855
+  number of failed transactions: 0 (0.000%)
+  latency average = 4.000 ms
+  initial connection time = 7.116 ms
+  ⭐ tps = 7499.582863 (without initial connection time)
   ```
+
+<br>
 
 - #### *3.　OLAP Workload Benchmark*
   ```
@@ -108,10 +142,21 @@
   
   
   ### RETURN ⬇️
-
-  
-  ### DESCRIPTION ⬇️
+  transaction type: /tmp/olap_benchmark.sql
+  scaling factor: 1
+  query mode: simple
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 300 s
+  number of transactions actually processed: 1126
+  number of failed transactions: 0 (0.000%)
+  latency average = 8151.214 ms
+  initial connection time = 7.311 ms
+  tps = 3.680433 (without initial connection time)
   ```
+
+<br>
 
 - #### *4.　HTAP Workload Benchmark*
   | Layer | Item | % |
@@ -121,22 +166,83 @@
   | 3 | OLAP ( BI ) | 1 |
 
   ```
-  ### 連線數固定 30
-  ### 用 300s 模擬真實的混合負載，讓系統在穩定狀態下表現出真實的性能指標
+  * 連線數固定 30
+  * 用 300s 模擬真實的混合負載，讓系統在穩定狀態下表現出真實的性能指標
   
   ### ACTION 1 ⬇️
   # ⚠️ 以 (90% OLTP, 9% Dashboard, 1% OLAP) 模擬更真實的混合負載，通常能提供更全面的性能評估
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -b tpcb-like@90 -f /tmp/dashboard_benchmark.sql@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
+  
   ### RETURN 1 ⬇️
+  transaction type: multiple scripts
+  scaling factor: 500
+  query mode: simple
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 300 s
+  number of transactions actually processed: 79431
+  number of failed transactions: 0 (0.000%)
+  latency average = 115.333 ms
+  initial connection time = 6.974 ms
+  tps = 260.116640 (without initial connection time)
+  SQL script 1: <builtin: TPC-B (sort of)>
+   - weight: 90 (targets 90.0% of total)
+   - 71481 transactions (90.0% of total, tps = 234.082380)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 5.749 ms
+   - latency stddev = 3.735 ms
+  SQL script 2: /tmp/dashboard_benchmark.sql
+   - weight: 9 (targets 9.0% of total)
+   - 7127 transactions (9.0% of total, tps = 23.339141)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 293.172 ms
+   - latency stddev = 40.258 ms
+  SQL script 3: /tmp/olap_benchmark.sql
+   - weight: 1 (targets 1.0% of total)
+   - 771 transactions (1.0% of total, tps = 2.524832)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 8500.827 ms
+   - latency stddev = 449.390 ms
   
   
   ### ACTION 2 ⬇️
   # ⚠️ 使用 -M prepared (預編譯語句) 可以減少 SQL 解析時間，通常能提升 10-20% TPS
   docker exec -it postgres_sql_container pgbench -c 30 -j 8 -T 300 -M prepared -b tpcb-like@90 -f /tmp/dashboard_benchmark.sql@9 -f /tmp/olap_benchmark.sql@1 -U pguser -d pgdatabase
   
-  ### RETURN 2 ⬇️
   
+  ### RETURN 2 ⬇️
+  transaction type: multiple scripts
+  scaling factor: 500
+  query mode: prepared
+  number of clients: 30
+  number of threads: 8
+  maximum number of tries: 1
+  duration: 300 s
+  number of transactions actually processed: 75012
+  number of failed transactions: 0 (0.000%)
+  latency average = 122.184 ms
+  initial connection time = 7.742 ms
+  tps = 245.531496 (without initial connection time)
+  SQL script 1: <builtin: TPC-B (sort of)>
+   - weight: 90 (targets 90.0% of total)
+   - 67453 transactions (89.9% of total, tps = 220.789154)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 5.545 ms
+   - latency stddev = 3.654 ms
+  SQL script 2: /tmp/dashboard_benchmark.sql
+   - weight: 9 (targets 9.0% of total)
+   - 6754 transactions (9.0% of total, tps = 22.107392)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 311.689 ms
+   - latency stddev = 45.948 ms
+  SQL script 3: /tmp/olap_benchmark.sql
+   - weight: 1 (targets 1.0% of total)
+   - 741 transactions (1.0% of total, tps = 2.425463)
+   - number of failed transactions: 0 (0.000%)
+   - latency average = 8885.535 ms
+   - latency stddev = 587.848 ms
   ```
 
 <br>
@@ -144,10 +250,13 @@
 - #### *Performance Comparison of Load Modes*
   | **Load Modes** | **Evaluation ( TPS )** | **Description** |
   | :--: | :--: | :-- |
-  | OLTP | - | - |
-  | OLAP | - | - |
-  | HTAP | - | - |
+  | OLTP | 1353.6 | - |
+  | OLAP | 3.6 | - |
+  | HTAP | 260.1 | - |
 
+  ```
+  改用 WSL2 測試，因為 Docker Desktop 的性能表現不穩定，尤其在高負載測試時會有明顯的性能瓶頸
+  ```
 
 <br>
 

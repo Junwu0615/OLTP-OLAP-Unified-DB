@@ -244,6 +244,7 @@ docker stats postgres_sql_container --no-stream
   - OLTP 延遲優化: 在 Prepared 模式下，OLTP 的平均延遲從 2.084ms 降至 1.437ms，優化效果達 31%。
   - 結論: 對於高比例的 OLTP 混合場景，開啟 prepared 模式能顯著降低解析開銷，讓短指令處理更高效。
   
+  
   # 關鍵洞察與建議
   - 資源爭搶明顯: 當 OLAP 佔比僅 1% 時，整體的 TPS 就產生了劇烈下滑。這證明了在單機 PostgreSQL 中執行 HTAP 時，長查詢會產生嚴重的 I/O 或 CPU 鎖定，影響 OLTP 的處理頻率。
   - 延遲落差極大: 最快與最慢的請求延遲相差約 6,000 倍 (1.4ms vs 9,000ms)，這在實務上可能導致連線池（Connection Pool）被長查詢佔滿。

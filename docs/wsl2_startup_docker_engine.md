@@ -51,14 +51,20 @@ sudo usermod -aG docker $USER
 
 ### *D.　停止 Docker Engine*
 ```
-# 停止服務
+# 1. 停止服務
 sudo service docker stop
 
-# 確認沒有任何 docker 相關進程在跑
+# 2. 徹底關閉，連自動觸發都不想要
+sudo systemctl stop docker.socket
+
+# 3. 確認沒有任何 docker 相關進程在跑
 ps aux | grep docker
 
 # [可選] 如果你之前有把啟動指令加到 .bashrc，請去刪除它，避免下次打開又啟動
 nano ~/.bashrc
+
+# [可選] 重新啟動 Docker 服務
+sudo systemctl start docker
 ```
 
 <br>

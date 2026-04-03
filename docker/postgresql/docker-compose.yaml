@@ -14,16 +14,16 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-#    shm_size: '64mb'
-    shm_size: '16gb'
-    command: >
-      postgres
-      -c shared_buffers=10GB
-      -c work_mem=128MB
-      -c maintenance_work_mem=512MB
-      -c synchronous_commit=off
-      -c checkpoint_completion_target=0.9
-      -c max_connections=100
+    shm_size: '64mb'
+#    shm_size: '16gb'
+#    command: >
+#      postgres
+#      -c shared_buffers=10GB
+#      -c work_mem=128MB
+#      -c maintenance_work_mem=512MB
+#      -c synchronous_commit=off
+#      -c checkpoint_completion_target=0.9
+#      -c max_connections=100
     restart: unless-stopped
 
   pgadmin:
