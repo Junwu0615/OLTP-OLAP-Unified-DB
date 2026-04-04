@@ -144,10 +144,17 @@
   
 - #### *b.　Grafana 設定*
   ```
-  acc: admin
-  pwd: admin
+  # Login Grafana Web UI
+    - acc: admin
+    - pwd: admin
   
-  新增 Prometheus datasource: http:127.0.0.1:9090
+  # 新增 Prometheus datasource: http:127.0.0.1:9090
+  
+  # 快速導入 Dashboard ( Dashboards -> New -> Import )
+    - Import via grafana.com : 9628 or 455
   ```
+- ![PNG](../assets/grafana_1.PNG)
+- ![PNG](../assets/grafana_2.PNG)
+- ![PNG](../assets/grafana_3.PNG)
 
 <br>
