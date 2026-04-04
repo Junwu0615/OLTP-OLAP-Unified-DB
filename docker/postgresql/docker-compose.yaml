@@ -14,14 +14,26 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-    shm_size: '64mb'
-#    shm_size: '16gb'
+
+    shm_size: '64mb' # 預設
+#    shm_size: '16gb' # 自定義
+
+    # 通用基準打開 synchronous_commit=off
 #    command: >
 #      postgres
 #      -c shared_buffers=10GB
 #      -c work_mem=128MB
 #      -c maintenance_work_mem=512MB
 #      -c synchronous_commit=off
+#      -c checkpoint_completion_target=0.9
+#      -c max_connections=100
+
+    # python 已設置 synchronous_commit=off
+#    command: >
+#      postgres
+#      -c shared_buffers=10GB
+#      -c work_mem=128MB
+#      -c maintenance_work_mem=512MB
 #      -c checkpoint_completion_target=0.9
 #      -c max_connections=100
     restart: unless-stopped

@@ -1,11 +1,10 @@
 # -*- coding: utf-8 -*-
 """
 TODO
-    Update Date: 2026-03-27
+    Update Date: 2026-04-04
     Description:
         - Supporting Contexts: OFF_PEAK, NORMAL, PEAK
     Notice:
-        - SET synchronous_commit = OFF; -- session 設定 ( 壓測必開 )
 """
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))

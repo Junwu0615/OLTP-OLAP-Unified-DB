@@ -64,6 +64,15 @@
 # 多開腳本壓測： 漸進式開腳本，觀測同時對同一個資料庫灌資料的影響
   - 開到第 N 個 Python 實例，BATCH_SIZE 的提交速度開始變慢？
   - 加入 OLAP 查詢時，production_records 的插入延遲是否翻倍？
+
+# OLAP 腳本: 產品生產排名 / 機台效率 / 每小時產量
+# 用 pgbench 執行 OLAP 查詢，同時啟動 OLTP 腳本，觀察 OLAP 查詢對 OLTP 的影響
+
+# 找瓶頸
+  - CPU  -> query optimization
+  - IO   -> table partition
+  - WAL  -> async commit
+  - Lock -> query redesign
 ```
 
 <br>

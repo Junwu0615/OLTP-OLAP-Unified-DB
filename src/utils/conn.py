@@ -1,4 +1,11 @@
 # -*- coding: utf-8 -*-
+"""
+TODO
+    Update Date: 2026-04-04
+    Notice:
+        - Session 設定
+            - 壓測必開 : SET synchronous_commit = OFF;
+"""
 import psycopg2
 
 MODULE_NAME = __name__.upper()
@@ -8,6 +15,11 @@ def get_conn(db, logging) -> psycopg2.extensions.connection:
         try:
             conn = psycopg2.connect(**db)
             conn.autocommit = False
+
+            # 在連線建立後立刻執行 Session 等級的設定
+            with conn.cursor() as cur:
+                cur.execute('SET synchronous_commit = OFF;')
+
             return conn
         except Exception as e:
             logging.error('Connect Failed Retrying...', exc_info=True)
