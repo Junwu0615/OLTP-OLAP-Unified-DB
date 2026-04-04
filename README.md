@@ -56,9 +56,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Single to Batch Insert | 批次發送 | 2026-03-26 |
 | 生成嚴謹 の 靜態數據 | - | 2026-03-26 |
 | 校正嚴謹 の 動態數據 | 單一機台同時間只允許做一件事 /<br>排隊消化訂單 / 訂單生產週期戳記 | 2026-03-27 |
-| 優化情境邏輯 | 插入機台事件 : 🗑️ machine_events | 2026-03-28 |
+| 調整情境邏輯 | 插入機台事件 : 🗑️ machine_events | 2026-03-28 |
 | execute -> execute_batch | 批次發送 + 批次提交 : 不適用於目前模擬方式 | X |
-| 優化情境邏輯 | 插入機台狀態 | 2026-03-30 |
+| 調整情境邏輯 | 插入機台狀態 : machine_status_logs | 2026-03-30 |
 | 增加數據量邏輯 | - | 2026-03-30 |
 | PoWA ( Running Normally ) | - | 2026-03-30 |
 | Try Again PoWA Web | ⚠️very difficult to deal with | 2026-03-30 |

@@ -40,8 +40,17 @@ sudo apt-get install docker-ce docker-ce-cli containerd.io docker-compose-plugin
 # 啟動 Docker 服務
 sudo service docker start
 
-# [可選] 如果你想要每次開機自動啟動 Docker，可以把啟動指令加到 .bashrc
-echo "sudo service docker start" >> ~/.bashrc
+# [可選] 如果想每次開機自動啟動 Docker
+    # 法 1: 可把啟動指令加到 .bashrc
+    echo "sudo service docker start" >> ~/.bashrc
+    
+    # [優雅] 法 2: 使用 systemd 啟動 (不過 WSL2 預設沒有 systemd，需先安裝並啟用)
+    # sudo systemctl enable docker
+
+# [可選] 若無設定 systemd，可在 /etc/wsl.conf 加入以下設定：
+    - sudo nano /etc/wsl.conf
+    - [boot]
+      systemd=true
 
 # 將當前使用者加入 docker 群組，允許不使用 sudo 執行 docker 命令
 sudo usermod -aG docker $USER
@@ -60,8 +69,12 @@ sudo systemctl stop docker.socket
 # 3. 確認沒有任何 docker 相關進程在跑
 ps aux | grep docker
 
-# [可選] 如果你之前有把啟動指令加到 .bashrc，請去刪除它，避免下次打開又啟動
-nano ~/.bashrc
+# [可選] 如果有設定自動啟動
+    # 法 1: 刪除 .bashrc 新增的指令，避免下次打開又啟動
+    nano ~/.bashrc
+    
+    # [優雅] 法 2: 使用 systemd 停止自動啟動
+    # sudo systemctl disable docker
 
 # [可選] 重新啟動 Docker 服務
 sudo systemctl start docker
