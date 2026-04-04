@@ -151,10 +151,122 @@
   # 新增 Prometheus datasource: http:127.0.0.1:9090
   
   # 快速導入 Dashboard ( Dashboards -> New -> Import )
-    - Import via grafana.com : 9628 or 455
+    - Import via grafana.com : ⭐9628 or 455
   ```
 - ![PNG](../assets/grafana_1.PNG)
 - ![PNG](../assets/grafana_2.PNG)
 - ![PNG](../assets/grafana_3.PNG)
+
+- #### *c.　壓測觀察重點*
+  ```
+  TPS           穩定上升
+  WAL rate      線性上升
+  Cache hit     > 95%
+  Locks         低
+  Checkpoint    平穩
+  ```
+
+- #### *d.　監控位置*
+  - #### *⭐ 1.　TPS: 每秒 Commit + Rollback 數*
+    - ![PNG](../assets/grafana_01.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    SELECT
+    xact_commit,
+    xact_rollback
+    FROM pg_stat_database;
+    ```
+    ```
+    壓測觀察重點： 
+    預期 : 逐漸上升 -> 穩定
+    非預期 : TPS 上升 → 突然下降
+      - WAL Flush -> Disk IO Saturation
+      - Lock Contention -> Transaction Locks
+      - CPU Saturation -> Transaction waiting for CPU
+      - Memory Saturation -> Transaction waiting for Memory
+      - Network Saturation -> Transaction waiting for Network
+      - Checkpoint -> Checkpoint Frequency too High
+    ```
+  - #### *⭐ 2.　WAL Rate*
+    - ![PNG](../assets/grafana_02.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    None
+    ```
+    ```
+    壓測觀察重點： 
+    預期 : None
+    非預期 : 突然暴增 ( WAL 持續線性成長 )
+     - Numerous INSERTs
+     - Numerous UPDATEs
+     - Checkpoint ( WAL Rate Spike )
+    ```
+  - #### *3.　IO Saturation*
+    - ![PNG](../assets/grafana_03.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    None
+    ```
+    ```
+    壓測觀察重點： IO Wait
+    預期 : None
+    非預期 : IO Full -> TPS 突然下降
+    ```
+  - #### *⭐ 4.　Lock Contention*
+    - ![PNG](../assets/grafana_04.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    SELECT *
+    FROM pg_locks;
+    ```
+    ```
+    壓測觀察重點： 
+    預期 : None
+    非預期 :
+        - Update Contention -> 多 Transaction 更新同 Row
+        - Index Page Lock -> 多 Transaction 更新同 Index Page
+        - DDL Lock -> Schema Change
+        - OLAP Query -> AccessShareLock
+    ```
+  - #### *5.　Connections*
+    - ![PNG](../assets/grafana_05.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    SELECT count(*)
+    FROM pg_stat_activity;
+    ```
+    ```
+    壓測觀察重點： 
+    預期 : Connections 穩定
+    非預期 : Connections 持續上升
+        - Connection Leak -> Client Connections Not Being Released
+        - Connection Storm -> Sudden Surge in Connection Attempts
+        - Pool Misconfiguration -> Connection Pooling Exploded
+    ```
+  - #### *⭐ 6.　Cache Hit Ratio*
+    - ![PNG](../assets/grafana_06.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    None
+    ```
+    ```
+    壓測觀察重點： 
+    預期 : > 0.95
+    非預期 : < 0.90
+      - shared_buffers 不夠 ??? 
+      - dataset > RAM ???
+    ```
+  - #### *⭐ 7.　WAL Flush / Checkpoint*
+    - ![PNG](../assets/grafana_07.PNG)
+    ```
+    -- Equivalent SQL ⬇️ 
+    None
+    ```
+    ```
+    壓測觀察重點： 
+    預期 : None
+    非預期 :
+      - checkpoints_req -> WAL segment filled up -> max_wal_size too small
+    ```
 
 <br>
