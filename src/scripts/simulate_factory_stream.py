@@ -5,6 +5,13 @@ TODO
     Description:
         - Supporting Contexts: OFF_PEAK, NORMAL, PEAK
     Notice:
+        - 提交方式
+            - [基準] cursor.execute : 每次執行後都需等待資料庫回應，適合單筆交易，但在大量交易時可能導致性能瓶頸
+            - [速度提升有限] cursor.executemany : 類似 execute_batch，但在某些情況下可能效率較低，適合中等量的交易
+                - 實際邏輯是將多筆交易組合成一個大的 SQL 語句，對資料庫造成較大負擔，且在某些情況下可能導致記憶體問題
+                - ex: for row: execute()
+            - [5~50x] cursor.execute_batch : 將多筆交易一次性發送給資料庫，減少往返次數，適合批量插入，需注意記憶體使用
+            - [最快] cursor.execute_values : 類似 execute_batch，但使用 VALUES 語法，對於大量插入特別有效，需注意記憶體使用
 """
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))

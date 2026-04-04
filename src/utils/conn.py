@@ -4,7 +4,9 @@ TODO
     Update Date: 2026-04-04
     Notice:
         - Session 設定
-            - 壓測必開 : SET synchronous_commit = OFF;
+            - SET synchronous_commit = OFF;
+                - [真實業務保持] ON  : 等待資料寫入磁碟後才回應，確保資料安全，但恐增加延遲
+                - [壓測必開]    OFF : 不等待資料寫入磁碟就回應，提升性能，但在系統崩潰時可能會丟失最近的交易
 """
 import psycopg2
 

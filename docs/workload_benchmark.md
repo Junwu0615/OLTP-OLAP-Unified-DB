@@ -59,7 +59,14 @@
   - WAL 壓力監控： WAL 生成速率、WAL 傳輸速率、WAL 傳輸延遲
   - Table bloat / vacuum 監控： bloat ratio、vacuum 活動頻率、dead tuples 數量
   
-# 導入監控工具： Prometheus + Grafana + Postgres-Exporter
+# 導入監控工具： 
+                PostgreSQL ( pg_stat_statements 擴展 )
+                   │
+                postgres_exporter
+                   │
+                Prometheus
+                   │
+                Grafana
 
 # 多開腳本壓測： 漸進式開腳本，觀測同時對同一個資料庫灌資料的影響
   - 開到第 N 個 Python 實例，BATCH_SIZE 的提交速度開始變慢？
@@ -71,7 +78,9 @@
 # 找瓶頸
   - CPU  -> query optimization
   - IO   -> table partition
-  - WAL  -> async commit
+  - WAL  -> async commit ( SET synchronous_commit = OFF; )
+    - Notice: if Generic (1000 inserts = 1000 commit = 1000 WAL flush)
+              if BATCH commit (1000 inserts = 1 commit = 1 WAL flush)
   - Lock -> query redesign
 ```
 
