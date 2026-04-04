@@ -14,14 +14,11 @@ services:
     volumes:
       - powa_data:/var/lib/postgresql/data
       - ./init:/docker-entrypoint-initdb.d
-    command:
-      - postgres
-      - -c
-      - shared_preload_libraries=pg_stat_statements,powa
-      - -c
-      - pg_stat_statements.track=all
-      - -c
-      - track_io_timing=on
+    command: >
+      postgres
+      -c shared_preload_libraries=pg_stat_statements,powa
+      -c pg_stat_statements.track=all
+      -c track_io_timing=on
     networks:
       powa-net:
         aliases:

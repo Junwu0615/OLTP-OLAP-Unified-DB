@@ -78,20 +78,23 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Multi-Instance Simulate | - | X |
 | Add Terraform | VM / Network / Storage | - |
 | Add Makefile | 整套 lab 一鍵部署 | - |
-| Add Grafana | Dashboard | - |
 
 <br>
 
 ### *B.　Service*
 - #### *1.　Service List*
   |**Service**|**Description**|**Port**|
-  |:--:|:--:|:--:|
+  |--:|:--|:--:|
+  | Grafana | for `Monitoring` | [3000](http:127.0.0.1:3000) |
   | PostgreSQL | for `Dev` | [5432](http:127.0.0.1:5432) |
   | PostgreSQL | for `Airflow` | [5433](http:127.0.0.1:5433) |
   | PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
   | Airflow | - | [8080](http:127.0.0.1:8080) |
   | ~~PostgreSQL~~ | for `PoWA` | [5431](http:127.0.0.1:5431) |
-  | ~~PoWA UI Web~~ | - | [8888](http:127.0.0.1:8888) |
+  | ~~PoWA UI Web~~ | for `PoWA` | [8888](http:127.0.0.1:8888) |
+  | Prometheus | for `Monitoring` | [9090](http:127.0.0.1:9090) |
+  | Postgres Exporter | for `Monitoring` | [9187](http:127.0.0.1:9187) |
+
 
 - #### *2.　[Service Startup Order](./docs/service_startup_order.md)*
 - #### *3.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*

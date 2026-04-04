@@ -1,7 +1,40 @@
 ### *1.　Startup PostgreSQL*
 - #### *a.　背景啟動*
   ```
+  docker-compose build --no-cache
   docker-compose up -d
+  ```
+- #### *b.　確認相關設定*
+  ```
+  -- 確認擴充功能版本
+  SELECT name, installed_version 
+  FROM pg_available_extensions 
+  WHERE installed_version IS NOT NULL;
+  
+  -- 確認 ??? 是否啟動
+  SHOW pg_stat_statements.track;
+  SHOW shared_buffers;
+  SHOW work_mem;
+  SHOW synchronous_commit; -- 用 python client 控制設定 off
+
+  -- 確認 Monitoring 角色 ( has_pg_monitor => true, has_read_stats => true )
+  SELECT
+      r.rolname,
+      m.rolname as member_of,
+      r.rolcanlogin AS can_login,
+      CASE WHEN r.rolsuper THEN 'YES' ELSE 'NO' END AS is_superuser,
+      -- 檢查是否擁有 pg_monitor 權限
+      pg_has_role(r.rolname, 'pg_monitor', 'USAGE') AS has_pg_monitor,
+      -- 檢查是否擁有 pg_read_all_stats 權限
+      pg_has_role(r.rolname, 'pg_read_all_stats', 'USAGE') AS has_read_stats,
+      r.rolconnlimit AS conn_limit
+  FROM pg_roles r
+  LEFT JOIN pg_auth_members am ON r.oid = am.member
+  LEFT JOIN pg_roles m ON am.roleid = m.oid
+  WHERE r.rolname = 'postgres_exporter';
+  
+  -- 試著下面語句，確認現在資料庫在「等什麼」
+  SELECT * FROM pg_wait_sampling_current;
   ```
 
 <br>
@@ -60,13 +93,9 @@
 ### *~~4.　Startup PoWA~~*
 - #### *a.　背景啟動*
   ```
-  docker compose up -d --build
-  
   docker-compose up -d --build powa-postgres powa-web
-  
-  docker-compose up -d powa-postgres
-  docker-compose up -d powa-web
   ```
+
 - #### *b.　確認擁有角色權限 + Schema 是否建立*
   ```
   # 進入容器
@@ -78,6 +107,7 @@
   # 確認 schema
   \dn
   ```
+
 - #### *c.　檢查 Extensions*
   ```
   # 確認 \dx # 應該要有 (5 rows) : [pg_stat_statements, btree_gist, hypopg, plpgsql, powa]
@@ -86,17 +116,30 @@
   # 若無，手動執行
   docker exec -it powa-postgres psql -U powa -d powa -f /docker-entrypoint-initdb.d/01_powa.sql
   ```
+
 - #### *d.　確保已經建立 Server*
   ```
   SELECT * FROM powa_servers;
   ```
+
 - #### *e.　測試 Web 使用者能登入 sql*
   ```
   docker exec -it powa-postgres psql -U powa -d powa
   ```
+
 - #### *f.　Web UI 登入資訊*
   ```
   username : powa
   password : powa
   server   : powa-db
   ```
+  
+<br>
+
+### *5.　Startup Monitoring*
+- #### *a.　背景啟動*
+  ```
+  docker-compose up -d
+  ```
+
+<br>
