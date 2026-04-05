@@ -66,7 +66,7 @@ $$;
 
 
 -- ==========================================================
--- * 授權 schema 權限
+-- * 設定 schema 權限
 -- ==========================================================
 -- * 授予 pg_monitor 核心權限：使其能讀取 pg_stat_statements 與系統活動狀態，而不需超級用戶權限
 GRANT pg_monitor TO postgres_exporter;
@@ -180,7 +180,7 @@ ALTER ROLE olap_user SET timezone TO 'Asia/Taipei';
 
 
 
--- * 設定使用者資源使用上限
+-- * 設定資源使用上限
 -- 1. Query 執行時間限制
 ALTER ROLE oltp_user
 SET statement_timeout = '10s';

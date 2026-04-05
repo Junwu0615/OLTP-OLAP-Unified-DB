@@ -15,7 +15,8 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      - ./init:/docker-entrypoint-initdb.d # 安裝 extensions
+      # 安裝 extensions + 建立 schema + 建立帳號 + 設定 schema 權限 + 設定使用時區 + 設定 Default Schema + 設定資源使用上限
+      - ./init:/docker-entrypoint-initdb.d
 
 #    shm_size: '64mb' # 預設
     shm_size: '16gb' # 自定義

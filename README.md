@@ -85,13 +85,13 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 - #### *1.　Service List*
   |**Service**|**Description**|**Port**|
   |--:|:--|:--:|
-  | Grafana | for `Monitoring` | [3000](http:127.0.0.1:3000) |
   | PostgreSQL | for `Dev` | [5432](http:127.0.0.1:5432) |
   | PostgreSQL | for `Airflow` | [5433](http:127.0.0.1:5433) |
   | PostgreSQL UI Web | - | [5050](http:127.0.0.1:5050) |
   | Airflow | - | [8080](http:127.0.0.1:8080) |
   | ~~PostgreSQL~~ | for `PoWA` | [5431](http:127.0.0.1:5431) |
   | ~~PoWA UI Web~~ | for `PoWA` | [8888](http:127.0.0.1:8888) |
+  | Grafana | for `Monitoring` | [3000](http:127.0.0.1:3000) |
   | Prometheus | for `Monitoring` | [9090](http:127.0.0.1:9090) |
   | Postgres Exporter | for `Monitoring` | [9187](http:127.0.0.1:9187) |
 
