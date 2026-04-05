@@ -1,6 +1,5 @@
 -- ==========================================================
--- * 安裝核心擴充功能 (Extensions)
--- 註：需搭配 docker-compose 中 shared_preload_libraries 的設定
+-- * 安裝擴充功能 (Extensions)
 -- ==========================================================
 
 -- 追蹤所有 SQL 的執行統計 (次數、耗時、I/O)
@@ -15,17 +14,19 @@ CREATE EXTENSION IF NOT EXISTS hypopg;
 -- 針對 32 核高併發環境，採樣並診斷「鎖等待 (Wait Events)」的來源
 CREATE EXTENSION IF NOT EXISTS pg_wait_sampling;
 
+\echo '--- [FINISH] 安裝擴充功能 ---'
 
 -- ==========================================================
--- * 建立 schema
+-- * 建立 Schema Mode
 -- ==========================================================
 
--- 建立 schema：oltp 用於交易系統
+-- 建立 Schema Mode：oltp 用於交易系統
 CREATE SCHEMA IF NOT EXISTS oltp;
 
--- 建立 schema：olap 用於分析系統
+-- 建立 Schema Mode：olap 用於分析系統
 CREATE SCHEMA IF NOT EXISTS olap;
 
+\echo '--- [FINISH] 建立 Schema Mode ---'
 
 -- ==========================================================
 -- * 建立帳號
@@ -64,16 +65,18 @@ BEGIN
 END
 $$;
 
+\echo '--- [FINISH] 建立帳號 ---'
 
 -- ==========================================================
--- * 設定 schema 權限
+-- * 設定 Schema 權限
 -- ==========================================================
 -- * 授予 pg_monitor 核心權限：使其能讀取 pg_stat_statements 與系統活動狀態，而不需超級用戶權限
 GRANT pg_monitor TO postgres_exporter;
 
+\echo '--- [FINISH] 授予 pg_monitor TO postgres_exporter 核心權限 ---'
 
 
--- * 針對 oltp schema 的權限設定：
+-- * 針對 oltp Schema 的權限設定：
 -- 1. 確保 oltp_owner 為 oltp schema 擁有者
 ALTER SCHEMA oltp OWNER TO oltp_owner;
 
@@ -92,9 +95,10 @@ GRANT SELECT, INSERT, UPDATE, DELETE ON TABLES TO oltp_user;
 ALTER DEFAULT PRIVILEGES FOR ROLE oltp_owner IN SCHEMA oltp
 GRANT USAGE, SELECT ON SEQUENCES TO oltp_user;
 
+\echo '--- [FINISH] 授予 oltp Schema 權限 ---'
 
 
--- * 針對 olap schema 的權限設定：
+-- * 針對 olap Schema 的權限設定：
 -- 1. 確保 olap_owner 為 olap schema 擁有者
 ALTER SCHEMA olap OWNER TO olap_owner;
 
@@ -117,6 +121,7 @@ GRANT USAGE, SELECT ON SEQUENCES TO olap_user;
 GRANT USAGE ON SCHEMA oltp TO olap_user;
 GRANT SELECT ON ALL TABLES IN SCHEMA oltp TO olap_user;
 
+\echo '--- [FINISH] 授予 olap Schema 權限 ---'
 
 
 -- * Migration Role 權限設定：
@@ -145,12 +150,14 @@ GRANT ALL ON TABLES TO olap_owner;
 ALTER DEFAULT PRIVILEGES FOR ROLE migration_user IN SCHEMA olap
 GRANT ALL ON SEQUENCES TO olap_owner;
 
+\echo '--- [FINISH] 授予 Migration Role 權限 ---'
 
 
 -- * Remove Public Role 預設權限
 REVOKE ALL ON SCHEMA oltp FROM PUBLIC;
 REVOKE ALL ON SCHEMA olap FROM PUBLIC;
 
+\echo '--- [FINISH] Remove Public Role ---'
 
 
 -- * 設定 Default Schema
@@ -166,6 +173,7 @@ SET search_path = olap;
 ALTER ROLE olap_user
 SET search_path = olap;
 
+\echo '--- [FINISH] 設定 Default Schema ---'
 
 
 -- * 設定使用時區
@@ -180,6 +188,7 @@ ALTER ROLE olap_owner SET timezone TO 'Asia/Taipei';
 ALTER ROLE oltp_user SET timezone TO 'Asia/Taipei';
 ALTER ROLE olap_user SET timezone TO 'Asia/Taipei';
 
+\echo '--- [FINISH] 設定使用時區 ---'
 
 
 -- * 設定資源使用上限
@@ -237,3 +246,5 @@ SET temp_file_limit = '0.5GB';
 
 ALTER ROLE olap_user
 SET temp_file_limit = '2GB';
+
+\echo '--- [FINISH] 設定資源使用上限 ---'
