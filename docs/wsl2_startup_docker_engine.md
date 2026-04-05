@@ -94,6 +94,19 @@ wsl --shutdown # 重啟 WSL2 讓設定生效
 
 htop # 觀察 CPU 資源情況，確保設定生效 (12核心)
 free -h # 觀察 Total Memory 資源情況，確保設定生效 (16GB)
+
+⭐ WIN 環境開鏡像後，可能會遇到連線衝突現象
+# 1. 查詢 5432 Port 是否被 Windows 佔用
+netstat -ano | findstr :5432
+
+# 2. 假設結果如下
+  TCP    127.0.0.1:5432         127.0.0.1:5820         FIN_WAIT_2      41120
+  TCP    127.0.0.1:5820         127.0.0.1:5432         CLOSE_WAIT      10460
+
+# 3. 強制砍連線
+Stop-Process -Id 10460 -Force
+
+# 4. 砍完後 docker 服務需重啟 接著再次測試是否正常
 ```
 ```
 [wsl2]

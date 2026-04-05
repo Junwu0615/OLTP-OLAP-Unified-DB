@@ -27,21 +27,22 @@ services:
     container_name: node_exporter
     pid: host
     volumes:
-#      - '/:/host:ro,rslave'
       - '/proc:/host/proc:ro'
       - '/sys:/host/sys:ro'
-      - '/:/rootfs:ro,rslave'
+#      - '/:/rootfs:ro,rslave' # WIN 路徑錯誤，不刻意執行
+      - '/:/rootfs:ro'
     command:
-#      - '--path.rootfs=/host'
       - '--path.procfs=/host/proc'
       - '--path.sysfs=/host/sys'
       - '--path.rootfs=/rootfs'
-      # 避免抓 container mount
-      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc)($|/)'
+
       # 避免 pseudo filesystem
       - '--collector.filesystem.fs-types-exclude=^(autofs|binfmt_misc|bpf|cgroup2?|configfs|debugfs|devpts|devtmpfs|fusectl|hugetlbfs|mqueue|overlay|proc|pstore|rpc_pipefs|securityfs|sysfs|tracefs)$'
-      # 避免抓 C、D drive mount ( Node Exporter 掃描這些路徑會極度緩慢且容易報錯 )
+
+      # 避免抓 container mount + C、D、E drive mount ( Node Exporter 掃描這些路徑會極度緩慢且容易報錯 )
       - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|mnt/c|mnt/d|mnt/e)($$|/)'
+#      - '--collector.filesystem.mount-points-exclude=^/(sys|proc|dev|host|etc|rootfs/var/lib/docker/containers|rootfs/var/lib/docker/overlay2|mnt/c|mnt/d|mnt/e)($$|/)'
+
     networks:
       - monitoring_default
     ports:

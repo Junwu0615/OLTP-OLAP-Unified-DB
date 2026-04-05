@@ -151,10 +151,10 @@
   # 新增 Prometheus datasource: http:127.0.0.1:9090
   
   # 快速導入 Dashboard ( Dashboards -> New -> Import )
-    - Import via grafana.com : ⭐9628 or 455
-    - PostgreSQL: 9628 / 9629
-    - Node Exporter: 1860
-    - PostgreSQL Table: 12485
+    - Import via grafana.com :
+      - PostgreSQL: ⭐9628 / 9629
+      - Node Exporter: 1860
+      - PostgreSQL Table: 12485
   
   # 觀測重點 ( 人工整併 )
   CPU
