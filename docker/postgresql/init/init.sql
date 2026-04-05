@@ -127,6 +127,8 @@ GRANT olap_owner TO migration_user;
 -- 2. Schema 權限
 GRANT USAGE, CREATE ON SCHEMA oltp TO oltp_owner;
 GRANT USAGE, CREATE ON SCHEMA olap TO olap_owner;
+GRANT USAGE, CREATE ON SCHEMA oltp TO migration_user;
+GRANT USAGE, CREATE ON SCHEMA olap TO migration_user;
 
 -- 3. 修正「舊表」的所有權 ( 若原本是 superuser 建的 ) 把整個 Schema 的擁有者直接改掉
 ALTER SCHEMA oltp OWNER TO oltp_owner;

@@ -346,6 +346,30 @@ CREATE SCHEMA IF NOT EXISTS olap;
   olap.dim_time
   olap.fact_machine_status
   olap.fact_production
+
+  ### 懶人建表指令 ###
+  docker cp "src/sql/models/oltp" postgres_sql_container:/tmp
+  docker cp "src/sql/models/olap" postgres_sql_container:/tmp
+  
+  docker exec -it postgres_sql_container psql -U migration_user -d pgdatabase
+  
+  SET ROLE oltp_owner;
+  SELECT current_user, session_user;
+  
+  \i /tmp/oltp/machines.sql
+  \i /tmp/oltp/products.sql
+  \i /tmp/oltp/machine_status_logs.sql
+  \i /tmp/oltp/production_orders.sql
+  \i /tmp/oltp/production_records.sql
+  
+  SET ROLE olap_owner;
+  SELECT current_user, session_user;
+  
+  \i /tmp/olap/dim_machine.sql
+  \i /tmp/olap/dim_product.sql
+  \i /tmp/olap/dim_time.sql
+  \i /tmp/olap/fact_machine_status.sql
+  \i /tmp/olap/fact_production.sql
   ```
   ![PNG](../assets/all_table.png)
 
