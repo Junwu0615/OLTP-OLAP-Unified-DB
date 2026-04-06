@@ -73,7 +73,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Partition Settings | `default_partition` | 2026-04-06 |
 | Auto Partition | `dags/sql/auto_partition/*` | 2026-04-06 |
 | OLTP to OLAP | `dags/sql/*` | 2026-04-06 |
-| DAG ETL Script | Fan-out Queue Pattern | - |
+| Build DAGs Coding Style | - | 2026-04-06 |
+| DAG ETL Script | Fan-out Queue Pattern | 2026-04-06 |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
 | Grafana Dashboard | update `htap_grafana.json` | - |
 | Analytical Queries | - | - |
