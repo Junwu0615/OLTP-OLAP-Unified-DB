@@ -1,5 +1,4 @@
-INSERT INTO olap.dim_machine (machine_id, machine_name,
-                              machine_type, line_no)
+INSERT INTO olap.dim_machine (machine_id, machine_name, machine_type, line_no)
 SELECT machine_id, machine_name, machine_type, line_no
 FROM oltp.machine
 ON CONFLICT (machine_id) -- 指定衝突的欄位（必須 UNIQUE 索引）

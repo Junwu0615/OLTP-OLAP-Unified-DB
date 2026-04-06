@@ -76,7 +76,11 @@
   ```
   docker-compose up -d
   ```
-- #### *c.　移除服務*
+- #### *c.　懶人 COPY*
+  ```
+  cp -r /mnt/c/Users/PC/Code/Python/Publish-To-Git/OLTP-OLAP-Unified-DB/src/scripts/dags ~/OLTP-OLAP-Unified-DB/docker/airflow/dags
+  ```
+- #### *d.　移除服務*
   ```
   # 停止且移除 :「容器」、「沒定義的孤兒」、「資料庫內容」
   docker-compose down --volumes --remove-orphans

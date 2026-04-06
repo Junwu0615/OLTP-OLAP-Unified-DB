@@ -43,12 +43,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Add PoWA | By Docker | 2026-03-23 |
 | PoWA Web Login Failed | ⚠️no reason found yet | 2026-03-23 |
 | Add New Role | Migration User | 2026-03-24 |
-| Simulate Test Run | beta_test.py | 2026-03-24 |
 | Script | delete_data.py | 2026-03-24 |
 | Script | drop_table.py | 2026-03-24 |
-| Script | create_partition_table.py | 2026-03-24 |
 | Script | factory_config.yaml | 2026-03-24 |
-| Script | factory_load_model.py | 2026-03-24 |
 | Script | init_factory_data.py | 2026-03-24 |
 | Script | simulate_factory_stream.py | 2026-03-24 |
 | Single to Batch Insert | 批次發送 | 2026-03-26 |

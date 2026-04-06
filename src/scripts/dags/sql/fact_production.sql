@@ -16,4 +16,5 @@ JOIN olap.dim_product p
     ON 1=1
     AND r.product_id = p.product_id
 WHERE 1=1
-AND r.event_time >= CURRENT_TIMESTAMP - INTERVAL '1 day';
+-- 存儲動態變數，每次只抽取可負荷數據，而不是固定的 1 天
+AND r.event_time >= CURRENT_TIMESTAMP - INTERVAL '30 min';
