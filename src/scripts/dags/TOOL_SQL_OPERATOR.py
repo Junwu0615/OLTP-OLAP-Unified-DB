@@ -1,6 +1,4 @@
 from airflow.operators.empty import EmptyOperator
-from airflow.operators.python import BranchPythonOperator
-
 from utils.dag_tool import *
 
 
@@ -16,8 +14,10 @@ dag = create_dag(
 
 
 with dag:
-    task_a = EmptyOperator(task_id='task_a')
+    START = get_start_symbol()
+    END = get_end_symbol()
+    TEST = EmptyOperator(task_id='TEST')
 
     START >> \
-    task_a >> \
+    TEST >> \
     END

@@ -12,7 +12,7 @@ dag = create_dag(
     dag_id='WF_AUTO_PARTITION',
     **{
         'tags': ['WF', 'AUTO', 'SCHEDULE'],
-        'schedule': '0 0 0 * *', # 每天午夜執行
+        'schedule': '0 0 * * *', # 每天午夜執行
         'max_active_runs': 1,  # TODO 同一時間只允許 1 個實例運行，若超過則排隊等待
         'max_active_tasks': 10,  # TODO 同一時間只允許 10 個任務運行，若超過則排隊等待
     }
@@ -20,6 +20,8 @@ dag = create_dag(
 
 
 with dag:
+    START = get_start_symbol()
+    END = get_end_symbol()
     CHECK_BRANCH_FROM_PARAMETERS = BranchPythonOperator(
         task_id='CHECK_BRANCH_FROM_PARAMETERS',
         python_callable=check_parameters
