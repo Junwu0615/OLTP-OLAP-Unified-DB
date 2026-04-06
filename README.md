@@ -38,9 +38,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Define Project Directory | - | 2026-03-21 |
 | Define Table DDL | - | 2026-03-21 |
 | Create OLTP DDL ( 6 ) | 3NF | 2026-03-21 |
-| SQL Script | next_month_partition.sql | 2026-03-21 |
 | Add Airflow | By Docker | 2026-03-21 |
-| SQL Script | this_month_partition.sql | 2026-03-22 |
 | DB Settings | Permission Settings | 2026-03-23 |
 | Add PoWA | By Docker | 2026-03-23 |
 | PoWA Web Login Failed | ⚠️no reason found yet | 2026-03-23 |
@@ -54,12 +52,12 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Script | init_factory_data.py | 2026-03-24 |
 | Script | simulate_factory_stream.py | 2026-03-24 |
 | Single to Batch Insert | 批次發送 | 2026-03-26 |
-| 生成嚴謹 の 靜態數據 | - | 2026-03-26 |
-| 校正嚴謹 の 動態數據 | 單一機台同時間只允許做一件事 /<br>排隊消化訂單 / 訂單生產週期戳記 | 2026-03-27 |
-| 調整情境邏輯 | 插入機台事件 : 🗑️ machine_events | 2026-03-28 |
+| Generate Rigorous Static Data | - | 2026-03-26 |
+| Rigorous Calibration of Dynamic Data | 單一機台同時間只允許做一件事 /<br>排隊消化訂單 / 訂單生產週期戳記 | 2026-03-27 |
+| Adjusting Contextual Logic | 插入機台事件 : 🗑️ machine_events | 2026-03-28 |
 | execute -> execute_batch | 批次發送 + 批次提交 : 不適用於目前模擬方式 | X |
-| 調整情境邏輯 | 插入機台狀態 : machine_status_logs | 2026-03-30 |
-| 增加數據量邏輯 | - | 2026-03-30 |
+| Adjusting Contextual Logic | 插入機台狀態 : machine_status_logs | 2026-03-30 |
+| Increase Data Volume Logic | - | 2026-03-30 |
 | PoWA ( Running Normally ) | - | 2026-03-30 |
 | Try Again PoWA Web | ⚠️very difficult to deal with | 2026-03-30 |
 | Generic DB Benchmark | Design Benchmark-1 | 2026-03-31 |
@@ -74,10 +72,12 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Grafana Dashboard | Organize Observation Indicators | 2026-04-05 |
 | Add WSL2 Settings | `.wslconfig` | 2026-04-06 |
 | Create OLAP DDL ( 5 ) | Star Schema | 2026-04-06 |
-| Auto Partition | `log` + `records` | 2026-04-06 |
-| Create Materialized View ( MV ) | 建立物化檢視表 | - |
-| OLTP to OLAP By ETL | - | - |
+| Partition Settings | `default_partition` | 2026-04-06 |
+| Auto Partition | `dags/sql/auto_partition/*` | 2026-04-06 |
+| OLTP to OLAP | `dags/sql/*` | 2026-04-06 |
 | DAG ETL Script | Fan-out Queue Pattern | - |
+| Create Materialized View ( MV ) | 建立物化檢視表 | - |
+| Grafana Dashboard | update `htap_grafana.json` | - |
 | Analytical Queries | - | - |
 | Multi-Instance Simulate | - | X |
 | Add Terraform | VM / Network / Storage | - |
