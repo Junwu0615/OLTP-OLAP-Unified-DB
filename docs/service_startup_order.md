@@ -68,8 +68,9 @@
 <br>
 
 ### *3.　Startup Airflow*
-- #### *a.　初始化*
+- #### *a.　創建目錄 + 初始化*
   ```
+  mkdir config; mkdir dags; mkdir logs; mkdir plugins;
   docker-compose up airflow-init
   ```
 - #### *b.　背景啟動*
