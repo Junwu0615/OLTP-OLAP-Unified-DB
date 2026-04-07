@@ -1,5 +1,5 @@
 from config import *
-from config.constants import RAW_DATA_READY
+from config.constants import WF_A_STATUS
 from utils.dag_tool import check_parameters
 # from airflow.datasets import Dataset
 
@@ -34,7 +34,7 @@ with DAG(
     extract_task = PythonOperator(
         task_id='extract_from_oltp',
         python_callable=extract_logic,
-        outlets=[RAW_DATA_READY] # TODO 關鍵：成功後觸發 Dataset 更新
+        outlets=[WF_A_STATUS] # TODO 關鍵：成功後觸發 Dataset 更新
     )
 
     START >> CHECK_PARAMETERS >> extract_task >> END
