@@ -2,7 +2,7 @@ from config import *
 from config.constants import RAW_DATA_READY
 
 with DAG(
-        dag_id='DATASET_B',
+        dag_id='WF_B',
         start_date=datetime(2025, 1, 1),
         schedule=[RAW_DATA_READY], # TODO 關鍵：由 Dataset 觸發 而非時間
         catchup=False,
@@ -35,7 +35,7 @@ with DAG(
 
     @task
     def run_partition_logic(status):
-        logging.warning(f'檢查狀態: {status}, 開始執行 OLAP 分區與載入...')
+        logging.warning(f'檢查狀態: {status} ...')
 
 
     # 執行鏈

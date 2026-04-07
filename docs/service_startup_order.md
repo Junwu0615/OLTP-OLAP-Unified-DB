@@ -105,6 +105,18 @@
   # 清理所有「未被掛載」的 Volume
   docker volume prune -f
   ```
+- #### *e.　除錯 DAG 方式*
+  ```
+  # 1. 進入容器
+  
+  # 執行除錯命令
+    [1] airflow dags reserialize
+    [2] python3 /opt/airflow/dags/WF_AUTO_PARTITION.py
+    [3] airflow dags test WF_AUTO_PARTITION 2026-04-07
+  
+  # 強制刷新與檢查 Import Errors
+    airflow dags list-import-errors
+  ```
 
 <br>
 
