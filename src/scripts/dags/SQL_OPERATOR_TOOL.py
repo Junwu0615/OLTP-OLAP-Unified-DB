@@ -1,13 +1,18 @@
 from airflow.operators.python import PythonOperator
 from airflow.providers.common.sql.operators.sql import SQLExecuteQueryOperator
-from utils.dag_tool import *
+from utils.dag_tool import START, END, create_dag, check_parameters
 
 
+# TODO  Settings Configuration
 DAG_ID = 'SQL_OPERATOR_TOOL'
+SCHEDULE = None
+TAGS = ['OPERATOR', 'SQL']
+
+
 dag = create_dag(
     dag_id=DAG_ID,
     **{
-        'tags': ['OPERATOR', 'SQL'],
+        'tags': TAGS,
         'schedule': None,
         'template_searchpath': ['/opt/airflow/dags/sql'],
         'max_active_runs': 30,  # TODO 同一時間只允許 30 個實例運行，若超過則排隊等待
@@ -17,13 +22,6 @@ dag = create_dag(
 
 
 with dag:
-    START = get_empty_symbol(
-        task_id='START'
-    )
-    END = get_empty_symbol(
-        task_id='END',
-        trigger_rule='none_failed'
-    )
     CHECK_PARAMETERS = PythonOperator(
         task_id='CHECK_PARAMETERS',
         python_callable=check_parameters,

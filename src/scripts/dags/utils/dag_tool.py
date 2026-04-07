@@ -6,6 +6,21 @@ from config.dag_config import BaseDagConfig
 
 
 # TODO 常用函式
+def __getattr__(name: str):
+    if name == 'START':
+        return EmptyOperator(
+            task_id=name,
+            trigger_rule='all_success',
+        )
+    elif name == 'END':
+        return EmptyOperator(
+            task_id=name,
+            trigger_rule='none_failed',
+        )
+    else:
+        raise AttributeError(f"module '{__name__}' has no attribute '{name}'")
+
+
 def check_parameters(**kwargs) -> dict:
     dag_run = kwargs.get('dag_run').conf if kwargs.get('dag_run') is not None else {}
     parameters = {**kwargs.get('params', {}), **dag_run}
@@ -27,13 +42,3 @@ def create_dag(dag_id: str, owner: str=None, **kwargs) -> DAG:
         **{**BaseDagConfig.dag_args, **kwargs}
     )
     return dag
-
-
-def get_empty_symbol(task_id: str=None, trigger_rule: str=None):
-    if task_id is None:
-        raise ValueError('task_id is required')
-    trigger_rule = 'all_success' if trigger_rule is None else trigger_rule
-    return EmptyOperator(
-        task_id=task_id,
-        trigger_rule=trigger_rule,
-    )
