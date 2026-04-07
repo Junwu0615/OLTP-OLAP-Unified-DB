@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 
 class BaseDagConfig:
     default_args = {
-        'owner': 'PC',
+        'owner': 'SYSTEM',
         'start_date': datetime(2025, 1, 1),
         'retries': 3,
         'retry_delay': timedelta(minutes=1),

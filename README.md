@@ -75,6 +75,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | OLTP to OLAP | `dags/sql/*` | 2026-04-06 |
 | Build DAGs Coding Style | - | 2026-04-06 |
 | DAG ETL Script | Fan-out Queue Pattern | 2026-04-06 |
+| DAG | Try `Param` | 2026-04-07 |
+| DAG | Try `Dataset` | 2026-04-08 |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
 | Grafana Dashboard | update `htap_grafana.json` | - |
 | Analytical Queries | - | - |

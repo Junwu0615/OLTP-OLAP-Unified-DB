@@ -8,9 +8,27 @@ DAG_ID = 'WF_AUTO_PARTITION'
 SCHEDULE = '0 0 * * *' # 每天午夜執行
 TAGS = ['WF', 'AUTO', 'SCHEDULE']
 
+params = {
+        'trigger_file': Param(
+            'fact_production',
+            type='string',
+            title='選擇要執行 SQL 檔案 (可複選)',
+            enum=['fact_production', 'machine_status_logs', 'production_records'],
+        ),
+        'target_env': Param(
+            'DEV',
+            type='string',
+            title='目標環境',
+            enum=['DEV', 'STAGING', 'PROD'],
+        ),
+        'dry_run': Param(True, type='boolean', title='是否僅測試'),
+    }
+
 
 dag = create_dag(
     dag_id=DAG_ID,
+    owner='PC',
+    params=params,
     **{
         'tags': TAGS,
         'schedule': SCHEDULE,
@@ -20,13 +38,19 @@ dag = create_dag(
 )
 
 
-def get_parameters(**kwargs) -> list:
-    ret_list = [
-        'fact_production',
-        # 'machine_status_logs',
-        # 'production_records'
-    ]
-    return [f'{DAG_ID}.trigger_{i}' for i in ret_list]
+def check_branch(**kwargs) -> list:
+    dag_run = kwargs.get('dag_run').conf if kwargs.get('dag_run') is not None else {}
+    parameters = {**kwargs.get('params', {}), **dag_run}
+
+    # ret_list = [
+    #     'fact_production',
+    #     # 'machine_status_logs',
+    #     # 'production_records'
+    # ]
+    # return [f'{DAG_ID}.trigger_{i}' for i in ret_list]
+    ret = parameters.get('trigger_file', None)
+
+    return f'{DAG_ID}.trigger_{ret}'
 
 
 with dag:
@@ -40,16 +64,14 @@ with dag:
     )
     CHECK_BRANCH_FROM_PARAMETERS = BranchPythonOperator(
         task_id='CHECK_BRANCH_FROM_PARAMETERS',
-        python_callable=get_parameters
+        python_callable=check_branch
     )
-
     with TaskGroup(group_id=DAG_ID) as WF_AUTO_PARTITION:
         target_list = [
             'fact_production',
             'machine_status_logs',
             'production_records'
         ]
-
         for i in target_list:
             TriggerDagRunOperator(
                 task_id=f'trigger_{i}',
