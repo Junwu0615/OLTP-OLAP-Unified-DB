@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# 1.　先一次性校正為目前使用者的權限，確保能夠從 Windows 路徑複製檔案
+# 1.　一次性校正為目前使用者的權限，確保能夠從 Windows 路徑複製檔案
 sudo chown -R $USER:$USER ~/OLTP-OLAP-Unified-DB/docker/airflow
 
 # 2.　從 Windows 路徑複製 DAGs 到 Airflow 容器的對應資料夾
