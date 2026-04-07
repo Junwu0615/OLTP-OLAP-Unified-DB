@@ -11,7 +11,7 @@ def extract_logic(**kwargs):
     kwargs['outlet_events'][WF_A_STATUS].extra = {
         'status': 'SUCCESS',
         'data_date': kwargs['ds'],
-        'actual_finish_time': datetime.now().isoformat()
+        'actual_finish_time': timezone.utcnow().isoformat() # 使用 Airflow 統一的現在時間 (UTC)
     }
 
 
