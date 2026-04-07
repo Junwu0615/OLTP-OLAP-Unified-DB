@@ -50,3 +50,18 @@ def get_value(key: str=None, read_bool: bool=False, **kwargs):
         return path.read_text()
 
     return ret
+
+
+def verify_dataset_integrity(dataset_obj, event_list) -> bool:
+    """TODO 驗證單一 Dataset 的簽章與狀態"""
+    if not event_list:
+        return False
+
+    last_event = event_list[-1]
+    metadata = last_event.extra or {}
+
+    if metadata.get('status') != 'SUCCESS' or not metadata.get('actual_finish_time'):
+        logging.error(f'Signature verification failed for Dataset: {dataset_obj.uri}')
+        return False
+
+    return True
