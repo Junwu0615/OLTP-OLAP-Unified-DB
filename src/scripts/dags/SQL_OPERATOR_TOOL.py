@@ -33,9 +33,10 @@ with dag:
     )
     SQLExecuteQuery = SQLExecuteQueryOperator(
         task_id='SQLExecuteQuery',
-        conn_id='postgresql_olap_user',
+        conn_id='postgresql_migration_user',
         # sql="auto_partition/{{ dag_run.conf.get('trigger_file', 'default_cleanup') }}.sql",
-        sql="/opt/airflow/dags/sql/auto_partition/{{ dag_run.conf.get('trigger_file') }}",
+        # sql="auto_partition/{{ dag_run.conf.get('trigger_file') }}.sql",
+        sql='auto_partition/fact_production.sql',
         autocommit=True
     )
 

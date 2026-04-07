@@ -4,6 +4,7 @@ processors=12
 networkingMode=mirrored
 dnsTunneling=true
 firewall=true
+localhostForwarding=true
 
 [experimental]
 autoMemoryReclaim=gradual

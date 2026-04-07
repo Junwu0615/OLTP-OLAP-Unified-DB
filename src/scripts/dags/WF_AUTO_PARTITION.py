@@ -87,7 +87,7 @@ with dag:
             TriggerDagRunOperator(
                 task_id=f'trigger_{i}',
                 trigger_dag_id='SQL_OPERATOR_TOOL',
-                conf={'trigger_file': f'{i}.sql'},
+                conf={'trigger_file': i},
                 wait_for_completion=False,  # 是否等待子 DAG 完成 才繼續執行後續任務
                 poke_interval=30  # 如果要等待，每隔多久檢查子 DAG 狀態
             )

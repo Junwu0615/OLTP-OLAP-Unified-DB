@@ -131,6 +131,9 @@ networkingMode=mirrored
 dnsTunneling=true
 firewall=true
 
+# 允許從 Windows 直接訪問 WSL2 的 localhost，方便開發測試
+localhostForwarding=true
+
 [experimental]
 # 自動回收快取記憶體，防止 VMMem 佔用不放
 # 利用 Linux 內核的「頁面回收」機制，把沒用到的快取還給 Windows。這反而能保護你的 Windows 不會因為記憶體被 WSL2 鎖死而崩潰
