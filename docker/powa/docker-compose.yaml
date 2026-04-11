@@ -4,7 +4,6 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: powa-postgres
     ports:
       - '5431:5432'
     environment:
@@ -27,7 +26,6 @@ services:
 
   powa-web:
     image: powateam/powa-web:latest
-    container_name: powa-web
     ports:
       - '8888:8888'
     environment:

@@ -108,6 +108,13 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 - #### *2.　[Service Startup Order](./docs/service_startup_order.md)*
 - #### *3.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*
 
+- #### *4.　Makefile Execute*
+  ```
+  make init
+  make build
+  make up
+  ```
+
 
 <br>
 

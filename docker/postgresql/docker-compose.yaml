@@ -1,10 +1,9 @@
 services:
-  postgres_db:
+  dev-db:
 #    image: postgres:16.2-alpine
     build:
       context: .
       dockerfile: Dockerfile
-    container_name: postgres_sql_container
     ports:
       - '5432:5432'
     env_file:
@@ -52,7 +51,6 @@ services:
 
   pgadmin:
     image: dpage/pgadmin4
-    container_name: pgadmin_container
     ports:
       - '5050:80'
     env_file:

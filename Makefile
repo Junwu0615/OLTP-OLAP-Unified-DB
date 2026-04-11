@@ -1,4 +1,5 @@
-MAIN_COMPOSE =./docker/docker-compose.yaml
+MAIN_NAME = oltp-olap-unified-db-cluster
+MAIN_COMPOSE = ./docker/docker-compose.yaml
 
 ALL_COMPOSE := $(wildcard ./docker/*/docker-compose.yaml)
 
@@ -11,7 +12,7 @@ BUILD_SERVICES =./docker/postgresql/docker-compose.yaml
 
 AIRFLOW_DIR = ./docker/airflow
 
-.PHONY: build up down down-v ps fix-sock db-wait list-configs clear-force
+.PHONY: build up down down-v ps fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode
 
 init:
 	@echo "* 針對子服務進行必要性 init"
@@ -23,36 +24,38 @@ init:
 	sudo chmod -R 775 $(AIRFLOW_DIR)
 	@echo "4. 執行 Airflow 資料庫初始化 (airflow-init)..."
 	docker compose -f $(MAIN_COMPOSE) up airflow-init
-	@echo "* 環境預熱完成 ..."
+	@echo "5. 環境預熱完成 ..."
 
 build:
 	@echo "* 針對子服務進行必要性 build (no-cache)..."
 	docker compose -f $(BUILD_SERVICES) build --no-cache
 
-up: fix-sock db-wait
+up: fix-sock db-wait prod-mode
 	@echo "* 正在啟動集群版服務..."
-	@echo "* 修正 Airflow 目錄權限 (UID 50000)..."
-	sudo chown -R 50000:0 $(AIRFLOW_DIR)
 	docker compose -f $(MAIN_COMPOSE) up -d
 	@echo "* 啟動完成 ..."
 
 down:
-	docker compose -f $(MAIN_COMPOSE) down
+	# 使用 -p 指定專案名稱，或者使用 -f 指定總控檔案
+	docker compose -p $(MAIN_NAME) down
 
 down-v:
-	docker compose -f $(MAIN_COMPOSE) down --volumes --remove-orphans
+	# 使用 -p 指定專案名稱，或者使用 -f 指定總控檔案
+	docker compose -p $(MAIN_NAME) down --remove-orphans
 
 ps:
-	docker compose -f $(MAIN_COMPOSE) ps
+	# 使用 -p 指定專案名稱，或者使用 -f 指定總控檔案
+	docker compose -p $(MAIN_NAME) ps
 
 fix-sock:
 	sudo chmod 666 /var/run/docker.sock
 
 db-wait:
-	@echo "正在啟動資料庫..."
-	docker compose -f $(MAIN_COMPOSE) up -d postgresql
-	@echo "等待資料庫就緒..."
+	@echo "1. 正在啟動資料庫..."
+	docker compose -f $(MAIN_COMPOSE) up -d dev-db
+	@echo "2. 等待資料庫就緒..."
 	sleep 10
+	@echo "3. Continue..."
 
 list-configs:
 	@echo "偵測到的子服務設定檔如下："
@@ -64,3 +67,15 @@ clear-force:
 
 	@echo "清理所有「未被掛載」的 Volume"
 	docker volume prune -f
+
+get-chown-all:
+	@echo "正在回收專案所有權至 $$(whoami)..."
+	sudo chown -R $$(whoami):$$(whoami) .
+
+dev-mode:
+	@echo "開發模式：IDE 編輯時把權限拿回來"
+	sudo chown -R $$(whoami):$$(whoami) $(AIRFLOW_DIR)
+
+prod-mode:
+	@echo "運行模式：把權限交還給 Airflow (容器啟動用)"
+	sudo chown -R 50000:0 $(AIRFLOW_DIR)
