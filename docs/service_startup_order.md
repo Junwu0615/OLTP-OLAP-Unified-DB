@@ -120,9 +120,15 @@
 
 - #### *f.　查水錶找到主閘道*
   ```
+  [法1]
   docker inspect -f '{{range .NetworkSettings.Networks}}{{.IPAddress}}{{end}}' airflow-airflow-worker-1
   # 172.19.0.7: 為 Airflow 容器，在 Docker 虛擬網路裡的私有 IP
   # 172.19.0.1: 就是它的出口； 繞過連線實體位置的坑 ( 在 YAML 加上 'host.docker.internal:172.19.0.1' )
+  
+  [法2]
+  docker network ls # 找到欲查詢容器網路
+  docker network inspect <容器網路名稱> -f '{{range .IPAM.Config}}{{.Gateway}}{{end}}'
+  直接找到出口
   ```
 
 <br>
