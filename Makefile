@@ -79,3 +79,10 @@ dev-mode:
 prod-mode:
 	@echo "運行模式：把權限交還給 Airflow (容器啟動用)"
 	sudo chown -R 50000:0 $(AIRFLOW_DIR)
+
+copy-dag: dev-mode
+	@echo "將開發 DAGs 複製到 Airflow 容器中的 DAGs 對應資料夾"
+	cp -ra src/scripts/dags $(AIRFLOW_DIR)
+	sudo chown -R 50000:0 $(AIRFLOW_DIR)
+	sudo chmod -R 775 $(AIRFLOW_DIR)
+	@echo "DAGs 同步完成並已校正權限 !"
