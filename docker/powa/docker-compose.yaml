@@ -1,9 +1,9 @@
-version: '3.8'
-
 services:
   powa-postgres:
 #    image: postgres:16
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: powa-postgres
     ports:
       - '5431:5432'

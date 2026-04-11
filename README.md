@@ -78,12 +78,13 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | DAG | Try `Param` | 2026-04-07 |
 | DAG | Try `Dataset` | 2026-04-08 |
 | Add Portainer | By Docker | 2026-04-11 |
+| Docker Compose Profiles | compose 模組化，整套 lab 一鍵部署 | 2026-04-11 |
+| Add Makefile | - | 2026-04-11 |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
 | Grafana Dashboard | update `htap_grafana.json` | - |
 | Analytical Queries | - | - |
 | Multi-Instance Simulate | - | X |
-| Add Terraform | VM / Network / Storage | - |
-| Add Makefile | 整套 lab 一鍵部署 | - |
+| Add Terraform / Ansible | VM / Network / Storage | - |
 
 <br>
 

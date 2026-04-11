@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   postgres_exporter:
     image: prometheuscommunity/postgres-exporter

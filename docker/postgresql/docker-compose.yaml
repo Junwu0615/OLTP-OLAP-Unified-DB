@@ -1,9 +1,9 @@
-version: '3.8'
-
 services:
   postgres_db:
 #    image: postgres:16.2-alpine
-    build: .
+    build:
+      context: .
+      dockerfile: Dockerfile
     container_name: postgres_sql_container
     ports:
       - '5432:5432'
