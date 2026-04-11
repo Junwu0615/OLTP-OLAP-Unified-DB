@@ -20,7 +20,9 @@ services:
 #      - '--collector.replication' # Replication status 若未來做 HTAP replica
     networks:
       - monitoring_default
-    restart: always
+    extra_hosts:
+      - 'host.docker.internal:172.19.0.1'
+    restart: unless-stopped
 
   node_exporter:
     image: prom/node-exporter
@@ -47,7 +49,7 @@ services:
       - monitoring_default
     ports:
       - '9100:9100'
-    restart: always
+    restart: unless-stopped
 
   prometheus:
     image: prom/prometheus
@@ -59,7 +61,7 @@ services:
       - '9090:9090'
     networks:
       - monitoring_default
-    restart: always
+    restart: unless-stopped
 
   grafana:
     image: grafana/grafana
@@ -72,7 +74,7 @@ services:
       - grafana_data:/var/lib/grafana
     networks:
       - monitoring_default
-    restart: always
+    restart: unless-stopped
 
 volumes:
   grafana_data:
