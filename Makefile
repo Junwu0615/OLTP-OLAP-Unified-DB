@@ -27,13 +27,11 @@ init:
 	@echo "* 針對子服務進行必要性 init"
 	@echo "1. 正在建立 Airflow 必要目錄 ..."
 	mkdir -p $(AIRFLOW_DIR)/config $(AIRFLOW_DIR)/dags $(AIRFLOW_DIR)/logs $(AIRFLOW_DIR)/plugins
-	@echo "2. 修正 Airflow 目錄權限, 讓目錄及其子目錄歸屬給 UID 50000"
-	sudo chown -R 50000:0 $(AIRFLOW_DIR)
-	@echo "3. 確保權限足夠 (rwxr-xr-x)"
-	sudo chmod -R 775 $(AIRFLOW_DIR)
-	@echo "4. 執行 Airflow 資料庫初始化 ..."
+	@echo "2. 修正 Airflow 目錄權限, 讓目錄及其子目錄歸屬給 UID 50000 + 確保權限足夠 (rwxr-xr-x)"
+	make prod-mode
+	@echo "3. 執行 Airflow 資料庫初始化 ..."
 	docker compose -f $(MAIN_COMPOSE) up airflow-init
-	@echo "5. 環境預熱完成 ..."
+	@echo "4. 環境預熱完成 ..."
 
 build:
 	@echo "* 針對子服務進行必要性 build (no-cache)..."
@@ -77,23 +75,23 @@ clear-force:
 	docker system prune -a --volumes -f
 
 get-chown-all:
-	@echo "正在回收專案所有權至 $$(whoami)..."
+	@echo "回收所有專案權至 $$(whoami)..."
 	sudo chown -R $$(whoami):$$(whoami) .
 
 dev-mode:
 	@echo "開發模式：IDE 編輯時把權限拿回來"
-	sudo chown -R $$(whoami):$$(whoami) $(MAIN_DIR)
+	sudo chown -R $$(whoami):$$(whoami) $(AIRFLOW_DIR)
 
 prod-mode:
-	@echo "運行模式：把權限交還給 Airflow (容器啟動用)"
+	@echo "運行模式：把權限交還給 Airflow"
 	sudo chown -R 50000:0 $(AIRFLOW_DIR)
 	sudo chmod -R 775 $(AIRFLOW_DIR)
 
-copy-dag: dev-mode
+copy-dag:
 	@echo "將開發 DAGs 複製到 Airflow 容器中的 DAGs 對應資料夾"
+	make dev-mode
 	cp -ra src/scripts/dags $(AIRFLOW_DIR)
-	sudo chown -R 50000:0 $(AIRFLOW_DIR)
-	sudo chmod -R 775 $(AIRFLOW_DIR)
+	make prod-mode
 	@echo "DAGs 同步完成並已校正權限 ..."
 
 airflow: fix-sock copy-dag

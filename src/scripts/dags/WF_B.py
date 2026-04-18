@@ -1,7 +1,13 @@
+"""
+TODO
+    Don't Remove:
+    # from airflow.datasets import Dataset
+    # from airflow.operators.python import PythonOperator
+    # from airflow.operators.trigger_dagrun import TriggerDagRunOperator
+"""
 from config import *
 from config.constants import WF_B_STATUS
 from utils.dag_tool import check_parameters
-# from airflow.datasets import Dataset
 
 
 def extract_logic(**kwargs):
@@ -21,7 +27,10 @@ with DAG(
     # start_date=datetime(2025, 1, 1),
     schedule=None,
     catchup=False,
-    tags=['DATASET']
+    tags=['DATASET'],
+    params={
+        'conf': Param(default={}, type='object')
+    },
 ) as dag:
     START = EmptyOperator(
         task_id='START',
