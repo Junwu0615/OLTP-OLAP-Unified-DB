@@ -3,7 +3,7 @@ services:
     image: portainer/portainer-ce:latest # 使用 Portainer CE 最新穩定版
     ports:
       - '9000:9000'   # http://localhost:9000
-      - '9443:9443'   # https://localhost:9443
+#      - '9443:9443'   # https://localhost:9443
     volumes:
       # 用 WSL2 啟動，避免遇到路徑映射問題
       - '/var/run/docker.sock:/var/run/docker.sock'

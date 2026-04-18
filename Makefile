@@ -14,7 +14,9 @@ BUILD_SERVICES =./docker/postgresql/docker-compose.yaml
 MAIN_DIR = ./docker
 AIRFLOW_DIR = ./docker/airflow
 
-.PHONY: build up down down-v ps fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode
+.PHONY: build up down down-v ps \
+fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode \
+airflow monitoring portainer postgresql
 
 init:
 	@echo "* 針對子服務進行必要性 init"
@@ -33,8 +35,9 @@ build:
 	docker compose -f $(BUILD_SERVICES) build --no-cache
 
 up: fix-sock db-wait copy-dag
-	@echo "* 指定單一服務指令 | ex: docker compose -f ./docker/docker-compose.yaml up -d grafana"
-	@echo "* 正在啟動集群版服務 ..."
+	@echo "* Notice | 指定單一服務指令 | ex: docker compose -f ./docker/docker-compose.yaml up -d grafana"
+	@echo "* Notice | 只針對 Airflow Webserver 更新設定 | ex: docker compose -f ./docker/docker-compose.yaml up -d --no-deps airflow-webserver"
+	@echo "* 正在一次性啟動集群服務 ..."
 	docker compose -f $(MAIN_COMPOSE) up -d
 	@echo "* 啟動完成 ..."
 
@@ -86,3 +89,32 @@ copy-dag: dev-mode
 	sudo chown -R 50000:0 $(AIRFLOW_DIR)
 	sudo chmod -R 775 $(AIRFLOW_DIR)
 	@echo "DAGs 同步完成並已校正權限 ..."
+
+airflow: fix-sock copy-dag
+	@echo "重新啟動 Airflow 相關服務"
+	docker compose -f $(MAIN_COMPOSE) down airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
+	docker compose -f $(MAIN_COMPOSE) up -d airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
+
+monitoring: fix-sock
+	@echo "重新啟動 Monitoring 相關服務"
+	docker compose -f $(MAIN_COMPOSE) down grafana prometheus node_exporter postgres_exporter
+	docker compose -f $(MAIN_COMPOSE) up -d grafana prometheus node_exporter postgres_exporter
+
+postgresql: fix-sock
+	@echo "重新啟動 Postgresql 相關服務"
+	docker compose -f $(MAIN_COMPOSE) down dev-db pgadmin
+	docker compose -f $(MAIN_COMPOSE) up -d dev-db pgadmin
+
+portainer: fix-sock
+	@echo "重新啟動 Portainer 相關服務"
+	docker compose -f $(MAIN_COMPOSE) down portainer
+	docker compose -f $(MAIN_COMPOSE) up -d portainer
+
+refresh: fix-sock
+	@echo "1. 檢查是否有定義 container 且不為空"
+	@if [ -z "$(container)" ]; then \
+		echo "Error: 必須指定服務名稱，ex: make refresh container=airflow-webserver"; \
+		exit 1; \
+	fi
+	@echo "2. 更新單一服務 $(container) | 強制砍並重開 | 完全不動其他關聯服務"
+	docker compose -f $(MAIN_COMPOSE) up -d --force-recreate --no-deps $(container)
