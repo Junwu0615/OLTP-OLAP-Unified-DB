@@ -1,18 +1,18 @@
 MAIN_NAME = ooud-cluster
 
-MAIN_COMPOSE = ./docker/docker-compose.yaml
+MAIN_COMPOSE = ./docker-compose.yaml
 
-ALL_COMPOSE := $(wildcard ./docker/*/docker-compose.yaml)
+ALL_COMPOSE := $(wildcard ./*/docker-compose.yaml)
 
-SUB_SERVICES = ./docker/airflow/docker-compose.yaml \
-			   ./docker/monitoring/docker-compose.yaml \
-			   ./docker/portainer/docker-compose.yaml \
-			   ./docker/postgresql/docker-compose.yaml
+SUB_SERVICES = ./airflow/docker-compose.yaml \
+			   ./monitoring/docker-compose.yaml \
+			   ./portainer/docker-compose.yaml \
+			   ./postgresql/docker-compose.yaml
 
-BUILD_SERVICES =./docker/postgresql/docker-compose.yaml
+BUILD_SERVICES =./postgresql/docker-compose.yaml
 
 MAIN_DIR = ./docker
-AIRFLOW_DIR = ./docker/airflow
+AIRFLOW_DIR = ./airflow
 
 AIRFLOW_CONTENT = airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
 MONITORING_CONTENT = grafana prometheus node_exporter postgres_exporter
@@ -38,8 +38,8 @@ build:
 	docker compose -f $(BUILD_SERVICES) build --no-cache
 
 up: fix-sock db-wait copy-dag
-	@echo "* Notice | 指定單一服務指令 | ex: docker compose -f ./docker/docker-compose.yaml up -d grafana"
-	@echo "* Notice | 只針對 Airflow Webserver 更新設定 | ex: docker compose -f ./docker/docker-compose.yaml up -d --no-deps airflow-webserver"
+	@echo "* Notice | 指定單一服務指令 | ex: docker compose -f ./docker-compose.yaml up -d grafana"
+	@echo "* Notice | 只針對 Airflow Webserver 更新設定 | ex: docker compose -f ./docker-compose.yaml up -d --no-deps airflow-webserver"
 	@echo "* 正在一次性啟動集群服務 ..."
 	docker compose -f $(MAIN_COMPOSE) up -d
 	@echo "* 啟動完成 ..."

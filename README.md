@@ -118,31 +118,25 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 - #### *II.　[Service Startup Order](./docs/service_startup_order.md)*
 - #### *III.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*
-- #### *IV.　[Terraform](./docs/terraform.md)*
+- #### *IV.　[Terraform & Ansible](./docs/terraform_ansible.md)*
 
 <br>
 
 ### *C.　Command Platform*
-- #### *I.　Makefile Execute*
+- #### *I.　Makefile Execute ( ⭐ Docker-Compose )*
   ```
+  cd docker
   make init
   make build
   make up
   ```
   
-- #### *⭐ II.　Terraform + Ansible Execute*
+- #### *II.　Makefile Execute ( ⭐ Terraform + Ansible )*
   ```
-  # Terraform : 負責蓋房子 ( 基礎設施 )
-  # Ansible : 負責裝潢與佈置 ( 設定檔與應用邏輯 )
-  
-  terraform init
-  
-  terraform plan
-  terraform apply
-  ansible-playbook deploy_config.yml
+  make ...
   ```
   
-- #### *⭐ III.　K8s Execute*
+- #### *III.　K8s Execute*
   ```
   k3d cluster create ooud-cluster
   ```

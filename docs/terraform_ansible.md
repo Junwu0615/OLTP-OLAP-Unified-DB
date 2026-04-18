@@ -1,4 +1,8 @@
 ## *Terraform*
+```
+# Terraform : 負責蓋房子 ( 基礎設施 )
+# Ansible : 負責裝潢與佈置 ( 設定檔與應用邏輯 )
+```
 
 ### *A.　安裝 Terraform*
 ```
@@ -27,3 +31,17 @@ terraform import docker_container.grafana ooud-cluster-grafana-1
 # sudo snap install jq
 docker inspect ooud-cluster-dev-db-1 --format '{{json .Config.Labels}}' | jq
 ```
+
+<br>
+
+### *D.　實際玩法*
+```
+terraform init # 進入 terraform 並初始化
+
+terraform plan # 檢視是否有異動
+terraform apply # 確認異動並決定是否復原
+
+ansible-playbook deploy_config.yml # 基於動態參數調整並重啟服務
+```
+
+<br>
