@@ -88,17 +88,18 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Grafana Dashboard | update `htap_grafana.json` | - |
 | Analytical Queries | - | - |
 | Multi-Instance Simulate | like Edge Machine | X |
-| Add Terraform | Docker Provider : 體驗宣告式配置 | - |
-| Add Ansible | 負責節點的初始化 + 設定檔 | - |
-| Add Kubernetes | Kind ( K8s in Docker ) | - |
-| Terraform vs. Docker Compose | 體驗狀態管理差異性 | - |
+| Add Terraform | Step 1: Docker Provider : 體驗宣告式配置 | - |
+| Terraform | docker-compose 配置轉移 | - |
+| Add Ansible | Step 2: 負責節點的初始化 + 設定檔 | - |
+| Add Kubernetes | Step 3: Kind ( K8s in Docker ) | - |
+| Terraform vs. Docker Compose | 體驗狀態管理差異性 ; 可救回配置崩潰，提高 HA | - |
 | Terraform & Ansible | 體驗 Ansible 如何補足 Terraform 的不足 | - |
-| K8S 複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
+| K8s 複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
 
 <br>
 
 ### *B.　Service*
-- #### *1.　Service List*
+- #### *I.　Service List*
   |**Service**|**Description**|**Port**|
   |--:|:--|:--:|
   | PostgreSQL | for `Dev` | [5432](http:127.0.0.1:5432) |
@@ -114,21 +115,39 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   | Portainer | for `Manage Containers` | [9000](http:127.0.0.1:9000) |
 
 
-- #### *2.　[Service Startup Order](./docs/service_startup_order.md)*
-- #### *3.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*
+- #### *II.　[Service Startup Order](./docs/service_startup_order.md)*
+- #### *III.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*
 
-- #### *4.　Makefile Execute*
+<br>
+
+### *C.　Command Platform*
+- #### *I.　Makefile Execute*
   ```
   make init
   make build
   make up
   ```
-
+  
+- #### *⭐ II.　Terraform + Ansible Execute*
+  ```
+  # Terraform : 負責蓋房子 ( 基礎設施 )
+  # Ansible : 負責裝潢與佈置 ( 設定檔與應用邏輯 )
+  
+  terraform init
+  terraform apply
+  
+  ansible-playbook deploy_config.yml
+  ```
+  
+- #### *⭐ III.　K8s Execute*
+  ```
+  k3d cluster create ooud-cluster
+  ```
 
 <br>
 
-### *C.　Implementation*
-- #### *1.　Roadmap*
+### *D.　Implementation*
+- #### *I.　Roadmap*
   ```
   # 待生成完整流程圖
   
@@ -147,9 +166,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   7. [Benchmark & Metrics]
   ```
 
-- #### *2.　[About SQL Something Detail](./docs/sql.md)*
+- #### *II.　[About SQL Something Detail](./docs/sql.md)*
 
-- #### *3.　Project Tree*
+- #### *III.　Project Tree*
   ```
   tree -I 'venv|.git|__pycache__|docs|logs|assets'
   tree -d -I 'venv|.git|__pycache__|docs|logs|assets'
@@ -175,19 +194,6 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   │   │   └── prometheus.yaml
   │   ├── portainer
   │   │   ├── data
-  │   │   │   ├── bin
-  │   │   │   ├── certs
-  │   │   │   │   ├── cert.pem
-  │   │   │   │   └── key.pem
-  │   │   │   ├── chisel
-  │   │   │   │   └── private-key.pem
-  │   │   │   ├── compose
-  │   │   │   ├── docker_config
-  │   │   │   │   └── config.json
-  │   │   │   ├── portainer.db
-  │   │   │   ├── portainer.key
-  │   │   │   ├── portainer.pub
-  │   │   │   └── tls
   │   │   └── docker-compose.yaml
   │   ├── postgresql
   │   │   ├── Dockerfile
@@ -271,14 +277,12 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
           ├── __init__.py
           ├── conn.py
           └── utils.py
-  
-  45 directories, 110 files
   ```
 
 
 <br>
 
-### *D.　Benchmark*
+### *E.　Benchmark*
 | **Type** | **Objective** | **Methods** |
 | :--: | :--: | :--: |
 | *[Generic Benchmark](./docs/generic_benchmark.md)* | 找「資料庫」極限   | 內建工具 |
@@ -286,18 +290,18 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 <br>
 
-### *E.　Notice*
+### *F.　Notice*
 - #### *⭐ 欲真正解決 OLTP / OLAP 衝突，詳見[另一解法](https://github.com/Junwu0615/OLTP-To-OLAP-Pipeline)*
-- #### *1.　OLTP　VS.　OLAP　VS.　HTAP*
+- #### *I.　OLTP　VS.　OLAP　VS.　HTAP*
   | **Type** | **Core Objectives** | **Design Philosophy** | **Data Model** | **Query Features** |
   |:--:|:--:|:--:|:--:|:--:|
   | OLTP | 快速且正確地處理`交易` | 一致性優先 | [ 正規化 ]<br>3NF | 單筆查詢、低延遲 |
   | OLAP | 高效`分析`大量資料 | 查詢效率優先 | [ 非正規化 ]<br>Star Schema / Wide Table | 聚合分析、大量掃描 |
   | HTAP | 同時支援`交易`與`分析` | 負載平衡 | 混合模型 | 即時分析 + 交易 |
-- #### *2.　若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
+- #### *II.　若 OLTP/OLAP 都在同一 DB Instance 裡，Schema 分離優劣 ?*
   - #### *優 : `限制權限`, `分開 Connection Pool`, `分開 Query Routing`*
   - #### *劣 : `CPU / IO 共用`，它們還是彼此搶資源*
-- #### *3.　Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
+- #### *III.　Schema 分離 ≠ 解決 OLTP/OLAP 衝突*
   - #### *還是同一個 CPU*
   - #### *還是同一個 Disk*
   - #### *還是同一個 Buffer Cache*
