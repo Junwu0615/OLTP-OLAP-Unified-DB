@@ -14,6 +14,11 @@ BUILD_SERVICES =./docker/postgresql/docker-compose.yaml
 MAIN_DIR = ./docker
 AIRFLOW_DIR = ./docker/airflow
 
+AIRFLOW_CONTENT = airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
+MONITORING_CONTENT = grafana prometheus node_exporter postgres_exporter
+POSTGRESQL_CONTENT = dev-db pgadmin
+PORTAINER_CONTENT = portainer
+
 .PHONY: build up down down-v ps \
 fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode \
 airflow monitoring portainer postgresql
@@ -82,6 +87,7 @@ dev-mode:
 prod-mode:
 	@echo "運行模式：把權限交還給 Airflow (容器啟動用)"
 	sudo chown -R 50000:0 $(AIRFLOW_DIR)
+	sudo chmod -R 775 $(AIRFLOW_DIR)
 
 copy-dag: dev-mode
 	@echo "將開發 DAGs 複製到 Airflow 容器中的 DAGs 對應資料夾"
@@ -92,23 +98,23 @@ copy-dag: dev-mode
 
 airflow: fix-sock copy-dag
 	@echo "重新啟動 Airflow 相關服務"
-	docker compose -f $(MAIN_COMPOSE) down airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
-	docker compose -f $(MAIN_COMPOSE) up -d airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
+	docker compose -f $(MAIN_COMPOSE) down $(AIRFLOW_CONTENT)
+	docker compose -f $(MAIN_COMPOSE) up -d $(AIRFLOW_CONTENT)
 
 monitoring: fix-sock
 	@echo "重新啟動 Monitoring 相關服務"
-	docker compose -f $(MAIN_COMPOSE) down grafana prometheus node_exporter postgres_exporter
-	docker compose -f $(MAIN_COMPOSE) up -d grafana prometheus node_exporter postgres_exporter
+	docker compose -f $(MAIN_COMPOSE) down $(MONITORING_CONTENT)
+	docker compose -f $(MAIN_COMPOSE) up -d $(MONITORING_CONTENT)
 
 postgresql: fix-sock
 	@echo "重新啟動 Postgresql 相關服務"
-	docker compose -f $(MAIN_COMPOSE) down dev-db pgadmin
-	docker compose -f $(MAIN_COMPOSE) up -d dev-db pgadmin
+	docker compose -f $(MAIN_COMPOSE) down $(POSTGRESQL_CONTENT)
+	docker compose -f $(MAIN_COMPOSE) up -d $(POSTGRESQL_CONTENT)
 
 portainer: fix-sock
 	@echo "重新啟動 Portainer 相關服務"
-	docker compose -f $(MAIN_COMPOSE) down portainer
-	docker compose -f $(MAIN_COMPOSE) up -d portainer
+	docker compose -f $(MAIN_COMPOSE) down $(PORTAINER_CONTENT)
+	docker compose -f $(MAIN_COMPOSE) up -d $(PORTAINER_CONTENT)
 
 refresh: fix-sock
 	@echo "1. 檢查是否有定義 container 且不為空"
