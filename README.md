@@ -93,7 +93,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Add Kubernetes | Kind ( K8s in Docker ) | - |
 | Terraform vs. Docker Compose | 體驗狀態管理差異性 | - |
 | Terraform & Ansible | 體驗 Ansible 如何補足 Terraform 的不足 | - |
-| K8S 的複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
+| K8S 複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
 
 <br>
 
@@ -151,8 +151,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 - #### *3.　Project Tree*
   ```
-  tree -I 'venv|.git|docs|logs|assets'
-  
+  tree -I 'venv|.git|__pycache__|docs|logs|assets'
+
   .
   ├── LICENSE
   ├── Makefile
@@ -169,19 +169,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   │   │   │   ├── WF_B_DATASET.py
   │   │   │   ├── WF_CREATE_TABLE.py
   │   │   │   ├── WF_C_DATASET.py
-  │   │   │   ├── __pycache__
-  │   │   │   │   ├── OP_SQL.cpython-312.pyc
-  │   │   │   │   ├── WF_AUTO_PARTITION.cpython-312.pyc
-  │   │   │   │   ├── WF_A_DATASET.cpython-312.pyc
-  │   │   │   │   ├── WF_B_DATASET.cpython-312.pyc
-  │   │   │   │   ├── WF_CREATE_TABLE.cpython-312.pyc
-  │   │   │   │   └── WF_C_DATASET.cpython-312.pyc
   │   │   │   ├── config
   │   │   │   │   ├── __init__.py
-  │   │   │   │   ├── __pycache__
-  │   │   │   │   │   ├── __init__.cpython-312.pyc
-  │   │   │   │   │   ├── constants.cpython-312.pyc
-  │   │   │   │   │   └── dag_config.cpython-312.pyc
   │   │   │   │   ├── constants.py
   │   │   │   │   └── dag_config.py
   │   │   │   ├── sql
@@ -211,9 +200,6 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   │   │   │   │           └── production_records.sql
   │   │   │   └── utils
   │   │   │       ├── __init__.py
-  │   │   │       ├── __pycache__
-  │   │   │       │   ├── __init__.cpython-312.pyc
-  │   │   │       │   └── dag_tool.cpython-312.pyc
   │   │   │       └── dag_tool.py
   │   │   ├── deploy_dags.sh
   │   │   ├── docker-compose.yaml
@@ -254,16 +240,11 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   ├── requirements.txt
   └── src
       ├── __init__.py
-      ├── __pycache__
-      │   └── __init__.cpython-312.pyc
       ├── config
       │   ├── __init__.py
       │   └── simulator.py
       ├── modules
       │   ├── __init__.py
-      │   ├── __pycache__
-      │   │   ├── __init__.cpython-312.pyc
-      │   │   └── log.cpython-312.pyc
       │   └── log.py
       ├── scripts
       │   ├── __init__.py
@@ -325,13 +306,10 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
       │           └── olap_benchmark.sql
       └── utils
           ├── __init__.py
-          ├── __pycache__
-          │   ├── __init__.cpython-312.pyc
-          │   └── utils.cpython-312.pyc
           ├── conn.py
           └── utils.py
   
-  51 directories, 126 files
+  45 directories, 110 files
   ```
 
 
