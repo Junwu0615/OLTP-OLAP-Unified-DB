@@ -1,5 +1,4 @@
-# 待改: oltp-olap-unified-db-cluster -> ooud-cluster
-MAIN_NAME = oltp-olap-unified-db-cluster
+MAIN_NAME = ooud-cluster
 
 MAIN_COMPOSE = ./docker/docker-compose.yaml
 
@@ -12,6 +11,7 @@ SUB_SERVICES = ./docker/airflow/docker-compose.yaml \
 
 BUILD_SERVICES =./docker/postgresql/docker-compose.yaml
 
+MAIN_DIR = ./docker
 AIRFLOW_DIR = ./docker/airflow
 
 .PHONY: build up down down-v ps fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode
@@ -32,7 +32,8 @@ build:
 	@echo "* 針對子服務進行必要性 build (no-cache)..."
 	docker compose -f $(BUILD_SERVICES) build --no-cache
 
-up: fix-sock db-wait prod-mode
+up: fix-sock db-wait copy-dag
+	@echo "* 指定單一服務指令 | ex: docker compose -f ./docker/docker-compose.yaml up -d grafana"
 	@echo "* 正在啟動集群版服務 ..."
 	docker compose -f $(MAIN_COMPOSE) up -d
 	@echo "* 啟動完成 ..."
@@ -64,7 +65,8 @@ list-configs:
 
 clear-force:
 	@echo "清理 build cache + container + image + network + volume"
-	docker system prune -a --volumes
+	docker compose -f $(MAIN_COMPOSE) down -v --remove-orphans
+	docker system prune -a --volumes -f
 
 get-chown-all:
 	@echo "正在回收專案所有權至 $$(whoami)..."
@@ -72,7 +74,7 @@ get-chown-all:
 
 dev-mode:
 	@echo "開發模式：IDE 編輯時把權限拿回來"
-	sudo chown -R $$(whoami):$$(whoami) $(AIRFLOW_DIR)
+	sudo chown -R $$(whoami):$$(whoami) $(MAIN_DIR)
 
 prod-mode:
 	@echo "運行模式：把權限交還給 Airflow (容器啟動用)"

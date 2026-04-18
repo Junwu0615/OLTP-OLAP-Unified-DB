@@ -1,4 +1,4 @@
-name: oltp-olap-unified-db-cluster
+name: ooud-cluster
 
 include:
   - path: ./airflow/docker-compose.yaml
