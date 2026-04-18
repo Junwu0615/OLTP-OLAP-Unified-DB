@@ -45,6 +45,16 @@ resource "docker_container" "prometheus" {
     label = "com.docker.compose.service"
     value = "prometheus"
   }
+  lifecycle {
+    ignore_changes = [
+      image,         # 忽略 sha256 與 latest 的字串差異
+      network_mode,  # 忽略 Docker 自動補上的 bridge 模式
+      user,          # 忽略映像檔內建的 user ID
+      working_dir,   # 忽略映像檔內建的工作目錄
+      command,       # 忽略啟動指令的格式微差
+      entrypoint,    # 忽略入口點的微差
+    ]
+  }
 }
 
 resource "docker_container" "grafana" {
@@ -74,6 +84,16 @@ resource "docker_container" "grafana" {
   labels {
     label = "com.docker.compose.service"
     value = "grafana"
+  }
+  lifecycle {
+    ignore_changes = [
+      image,         # 忽略 sha256 與 latest 的字串差異
+      network_mode,  # 忽略 Docker 自動補上的 bridge 模式
+      user,          # 忽略映像檔內建的 user ID
+      working_dir,   # 忽略映像檔內建的工作目錄
+      command,       # 忽略啟動指令的格式微差
+      entrypoint,    # 忽略入口點的微差
+    ]
   }
 }
 
@@ -114,6 +134,16 @@ resource "docker_container" "postgres_exporter" {
   labels {
     label = "com.docker.compose.service"
     value = "postgres_exporter"
+  }
+  lifecycle {
+    ignore_changes = [
+      image,         # 忽略 sha256 與 latest 的字串差異
+      network_mode,  # 忽略 Docker 自動補上的 bridge 模式
+      user,          # 忽略映像檔內建的 user ID
+      working_dir,   # 忽略映像檔內建的工作目錄
+      command,       # 忽略啟動指令的格式微差
+      entrypoint,    # 忽略入口點的微差
+    ]
   }
 }
 
@@ -167,5 +197,15 @@ resource "docker_container" "node_exporter" {
   labels {
     label = "com.docker.compose.service"
     value = "node_exporter"
+  }
+  lifecycle {
+    ignore_changes = [
+      image,         # 忽略 sha256 與 latest 的字串差異
+      network_mode,  # 忽略 Docker 自動補上的 bridge 模式
+      user,          # 忽略映像檔內建的 user ID
+      working_dir,   # 忽略映像檔內建的工作目錄
+      command,       # 忽略啟動指令的格式微差
+      entrypoint,    # 忽略入口點的微差
+    ]
   }
 }

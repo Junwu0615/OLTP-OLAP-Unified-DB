@@ -53,8 +53,10 @@ down-v:
 	docker compose -p $(MAIN_NAME) down --remove-orphans
 
 ps:
-	# 使用 -p 指定專案名稱，或者使用 -f 指定總控檔案
-	docker compose -p $(MAIN_NAME) ps
+	# ! 不使用 | -p 指定專案名稱，或者使用 -f 指定總控檔案
+	# ! 不使用 | docker compose -p $(MAIN_NAME) ps
+	@echo "* 正在搜尋名稱包含 $(MAIN_NAME) 的容器..."
+	docker ps -a --filter "name=$(MAIN_NAME)"
 
 fix-sock:
 	sudo chmod 666 /var/run/docker.sock
