@@ -10,6 +10,13 @@ terraform {
   }
 }
 
+module "generic_worker" {
+  source       = "../generic_docker_container"
+  main_name    = var.main_name
+  network_name = var.network_name
+  app_configs  = local.apps # TODO 把定義清單丟進去
+}
+
 locals {
   apps = {
     "portainer" = {
@@ -27,11 +34,4 @@ locals {
       ]
     }
   }
-}
-
-module "generic_worker" {
-  source       = "../generic_docker_container"
-  main_name    = var.main_name
-  network_name = var.network_name
-  app_configs  = local.apps # TODO 把定義清單丟進去
 }

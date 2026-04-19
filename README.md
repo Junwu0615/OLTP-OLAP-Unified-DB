@@ -191,34 +191,59 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   ├── LICENSE
   ├── Makefile
   ├── README.md
-  ├── docker
-  │   ├── airflow
-  │   │   ├── airflow-webserver.pid
-  │   │   ├── airflow.cfg
-  │   │   ├── config
-  │   │   ├── dags
-  │   │   ├── deploy_dags.sh
-  │   │   ├── docker-compose.yaml
-  │   │   ├── plugins
-  │   │   └── webserver_config.py
+  ├── docker-compose
+  │   ├── Makefile
+  │   ├── ansible
+  │   │   ├── deploy_config.yml
+  │   │   └── templates
+  │   │       └── prometheus.yml.j2
+  │   ├── docker
+  │   │   ├── airflow
+  │   │   │   ├── airflow-webserver.pid
+  │   │   │   ├── airflow.cfg
+  │   │   │   ├── config
+  │   │   │   ├── dags
+  │   │   │   ├── deploy_dags.sh
+  │   │   │   ├── docker-compose.yaml
+  │   │   │   ├── plugins
+  │   │   │   └── webserver_config.py
+  │   │   ├── monitoring
+  │   │   │   ├── docker-compose.yaml
+  │   │   │   ├── htap_grafana.json
+  │   │   │   └── prometheus.yaml
+  │   │   ├── portainer
+  │   │   │   └── docker-compose.yaml
+  │   │   ├── postgresql
+  │   │   │   ├── Dockerfile
+  │   │   │   ├── docker-compose.yaml
+  │   │   │   └── init
+  │   │   │       └── init.sql
+  │   │   └── powa
+  │   │       ├── Dockerfile
+  │   │       ├── docker-compose.yaml
+  │   │       └── init
+  │   │           └── powa.sql
   │   ├── docker-compose.yaml
-  │   ├── monitoring
-  │   │   ├── docker-compose.yaml
-  │   │   ├── htap_grafana.json
-  │   │   └── prometheus.yaml
-  │   ├── portainer
-  │   │   ├── data
-  │   │   └── docker-compose.yaml
-  │   ├── postgresql
-  │   │   ├── Dockerfile
-  │   │   ├── docker-compose.yaml
-  │   │   └── init
-  │   │       └── init.sql
-  │   ├── powa
-  │   │   ├── Dockerfile
-  │   │   ├── docker-compose.yaml
-  │   │   └── init
-  │   │       └── powa.sql
+  │   ├── terraform
+  │   │   ├── main.tf
+  │   │   ├── modules
+  │   │   │   ├── generic_docker_container
+  │   │   │   │   ├── main.tf
+  │   │   │   │   ├── outputs.tf
+  │   │   │   │   └── variables.tf
+  │   │   │   ├── monitoring
+  │   │   │   │   ├── main.tf
+  │   │   │   │   ├── outputs.tf
+  │   │   │   │   └── variables.tf
+  │   │   │   └── portainer
+  │   │   │       ├── main.tf
+  │   │   │       ├── outputs.tf
+  │   │   │       └── variables.tf
+  │   │   ├── outputs.tf
+  │   │   ├── terraform.tfstate
+  │   │   ├── terraform.tfstate.backup
+  │   │   ├── terraform.tfvars
+  │   │   └── variables.tf
   │   └── wsl2
   ├── requirements.txt
   └── src
@@ -299,8 +324,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 ### *E.　Benchmark*
 | **Type** | **Objective** | **Methods** |
 | :--: | :--: | :--: |
-| *[Generic Benchmark](./docs/generic_benchmark.md)* | 找「資料庫」極限   | 內建工具 |
-| *[Workload Benchmark](./docs/workload_benchmark.md)* | 找「指定系統」瓶頸 | 自訂腳本 |
+| *[Generic Benchmark](./docs/generic_benchmark.md)* | 資料庫極限 | 內建工具 |
+| *[Workload Benchmark](./docs/workload_benchmark.md)* | 系統瓶頸 | 自訂腳本 |
 
 <br>
 

@@ -46,7 +46,7 @@ terraform plan
 terraform apply # 須人為輸入'yes'
 terraform apply -auto-approve # 跳過確認環節，直接執行
 
-# 關閉宣告
+# 關閉所有已被定義的宣告物件 ( 容器 + 網路 )
 terraform destroy -auto-approve
 
 # Terraform 如何自動理清這些模組間的依賴關係
