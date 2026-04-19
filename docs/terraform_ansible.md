@@ -36,12 +36,25 @@ docker inspect ooud-cluster-dev-db-1 --format '{{json .Config.Labels}}' | jq
 
 ### *D.　實際玩法*
 ```
-terraform init # 進入 terraform 並初始化
+# 進入 terraform 並初始化
+terraform init
 
-terraform plan # 檢視是否有異動
-terraform apply # 確認異動並決定是否復原
+# 檢視是否有異動
+terraform plan
 
-ansible-playbook deploy_config.yml # 基於動態參數調整並重啟服務
+# 確認異動並決定是否復原
+terraform apply # 須人為輸入'yes'
+terraform apply -auto-approve # 跳過確認環節，直接執行
+
+# 關閉宣告
+terraform destroy -auto-approve
+
+# 基於動態參數調整並重啟服務
+ansible-playbook deploy_config.yml
+
+# 讓 ansible 指令可以識別 community.docker
+# 等同 python 的 pip install ...
+ansible-galaxy collection install community.docker
 ```
 
 <br>

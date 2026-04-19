@@ -88,13 +88,13 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Grafana Dashboard | update `htap_grafana.json` | - |
 | Analytical Queries | - | - |
 | Multi-Instance Simulate | like Edge Machine | X |
-| Add Terraform | Step 1: Docker Provider : 體驗宣告式配置 | 2026-04-19 |
+| Add Terraform | Step 1 : Docker Provider 體驗宣告式配置 | 2026-04-19 |
 | Terraform | docker-compose 配置轉移 | 2026-04-19 |
-| Add Ansible | Step 2: 負責節點的初始化 + 設定檔 | 2026-04-19 |
+| Add Ansible | Step 2 : 負責節點的初始化 + 設定檔 | 2026-04-19 |
 | Add Makefile | for `terraform + ansible` | 2026-04-19 |
 | Terraform vs. Docker Compose | 體驗狀態管理差異性 ; 可救回配置崩潰，提高 HA | 2026-04-19 |
 | Terraform & Ansible | 體驗 Ansible 如何補足 Terraform 的不足 | 2026-04-19 |
-| Add Kubernetes | Step 3: Kind ( K8s in Docker ) | - |
+| Add Kubernetes | Step 3 : Kind ( K8s in Docker ) | - |
 | K8s 複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
 
 <br>
@@ -125,18 +125,33 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 ### *C.　Command Platform*
 - #### *I.　Makefile Execute ( ⭐ Docker-Compose )*
   ```
-  cd docker
+  cd docker-compose
   make init
   make build
   make up
   ```
   
-- #### *II.　Makefile Execute ( ⭐ Terraform + Ansible )*
+- #### *II.　Makefile Execute ( ⭐ Terraform + Ansible + Compose )*
   ```
-  make ...
+  cd docker-compose
+  # 初始化
+  make init
+  make build
+  make setup
+  
+  # 依賴 compose 服務
+  make postgresql
+  make airflow
+  
+  # 依賴 Terraform + Ansible 服務
+  make all
+  
+  # 關閉服務
+  make down
+  make destroy
   ```
   
-- #### *III.　K8s Execute*
+- #### *III.　Makefile Execute ( ⭐ K8s + Helm + Terraform + Ansible )*
   ```
   k3d cluster create ooud-cluster
   ```

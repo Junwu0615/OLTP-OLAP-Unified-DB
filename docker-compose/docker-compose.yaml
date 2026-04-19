@@ -1,0 +1,8 @@
+name: ooud-cluster
+
+include:
+  - path: ./docker/airflow/docker-compose.yaml
+  - path: ./docker/monitoring/docker-compose.yaml
+  - path: ./docker/portainer/docker-compose.yaml
+  - path: ./docker/postgresql/docker-compose.yaml
+#  - path: ./docker/powa/docker-compose.yaml
