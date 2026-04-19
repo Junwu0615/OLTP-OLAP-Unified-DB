@@ -14,7 +14,7 @@ terraform {
 provider "docker" {}
 
 
-# TODO 定義網路設定
+# TODO ----- 基礎設施層： 網路 -----
 resource "docker_network" "monitoring" {
   name = "${var.MAIN_NAME}_monitoring_default"
 }
@@ -24,11 +24,18 @@ resource "docker_network" "portainer" {
 }
 
 
-# TODO 呼叫已被定義模組
+# ----- 基礎設施層： Volume -----
+# resource + lifecycle 模式: 在此定義清楚，但必須宣告誤刪除 !
+# data source 模式: 僅引用
+  # TODO 只引用已建立的 volume 怕被暴力誤刪 => 目前做法: 不定義，由軟體層建立並持續使用
+# bind mount 模式: 掛載硬碟目錄
+
+
+# TODO ----- 服務層： 呼叫模組 -----
 module "monitoring_services" {
   source       = "./modules/monitoring"
-  depends_on = [docker_network.monitoring]
-  network_name = "${var.MAIN_NAME}_monitoring_default"
+  network_name = docker_network.monitoring.name # TODO 隱性依賴: 網路需要先啟動
+  depends_on = [docker_network.monitoring] # TODO 顯性依賴: 網路需要先啟動
 
   main_name    = var.MAIN_NAME
   service_path = var.SERVICE_PATH
@@ -40,8 +47,8 @@ module "monitoring_services" {
 
 module "portainer_services" {
   source       = "./modules/portainer"
+  network_name = docker_network.portainer.name
   depends_on = [docker_network.portainer]
-  network_name = "${var.MAIN_NAME}_portainer_default"
 
   main_name    = var.MAIN_NAME
   service_path = var.SERVICE_PATH
