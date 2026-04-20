@@ -1,4 +1,4 @@
-## *Terraform*
+## *Terraform & Ansible*
 ```
 # Terraform : 負責蓋房子 ( 基礎設施 )
 # Ansible : 負責裝潢與佈置 ( 設定檔與應用邏輯 )
@@ -53,7 +53,10 @@ terraform destroy -auto-approve
 terraform graph
 
 # 基於動態參數調整並重啟服務
-ansible-playbook deploy_config.yml
+ansible-playbook -i inventory.init playbook.yml
+
+# 手動強制觸發情境 (for tags=reload)
+ansible-playbook deploy_config.yml --tags reload
 
 # 讓 ansible 指令可以識別 community.docker
 # 等同 python 的 pip install ...

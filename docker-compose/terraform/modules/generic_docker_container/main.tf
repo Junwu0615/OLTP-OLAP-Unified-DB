@@ -63,12 +63,12 @@ resource "docker_container" "this" {
   }
   lifecycle {
     ignore_changes = [
-      image,         # 忽略 sha256 與 latest 的字串差異
-      network_mode,  # 忽略 Docker 自動補上的 bridge 模式
-      user,          # 忽略映像檔內建的 user ID
-      working_dir,   # 忽略映像檔內建的工作目錄
-      command,       # 忽略啟動指令的格式微差
-      entrypoint,    # 忽略入口點的微差
+      # image,        # 建議移除：若更換了版本標籤（例如從 v1 改到 v2），你通常會希望它重啟
+      network_mode,   # 建議保留：Docker 常常會自動填入 bridge，造成 tf 無謂的差異比對
+      user,           # 建議保留：避免因映像檔內部 user 定義與 tf 預設值不符而重啟
+      working_dir,    # 建議保留：理由同上
+      # command,      # 建議移除：可透過 command 注入啟動參數
+      # entrypoint,   # 建議移除：若 entrypoint 改了，通常服務邏輯也變了
     ]
   }
 }

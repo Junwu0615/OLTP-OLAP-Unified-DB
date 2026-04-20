@@ -1,0 +1,12 @@
+# ansible/roles/monitoring/task/main.yml
+
+
+- name: Render Prometheus Configuration
+  template:
+    src: templates/prometheus.yml.j2
+    dest: '{{ config_path }}'
+    # TODO 生成臨時檔案，用於檢查語法
+    validate: "docker run --rm -v %s:/test.yml prom/prometheus:latest promtool check config /test.yml"
+
+#  register: config_result  # TODO [法 1] 記錄檔案是否有變動
+  notify: Reload Prometheus # TODO [法 2] 告知 handlers 進行 "Reload Prometheus" 動作

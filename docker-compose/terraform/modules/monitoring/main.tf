@@ -10,6 +10,19 @@ terraform {
   }
 }
 
+data "docker_registry_image" "prometheus" {
+  name = "prom/prometheus:v3.1.0"
+}
+data "docker_registry_image" "grafana" {
+  name = "grafana/grafana:11.5.1"
+}
+data "docker_registry_image" "postgres_exporter" {
+  name = "prometheuscommunity/postgres-exporter:v0.16.0"
+}
+data "docker_registry_image" "node_exporter" {
+  name = "prom/node-exporter:v1.8.2"
+}
+
 module "generic_worker" {
   source       = "../generic_docker_container"
   main_name    = var.main_name
@@ -20,13 +33,17 @@ module "generic_worker" {
 locals {
   apps = {
     "prometheus" = {
-      image    = "prom/prometheus:latest"
+      image    = data.docker_registry_image.prometheus.sha256_digest
       ports    = [{ internal = 9090, external = 9090 }]
       restart  = "unless-stopped"
       security_opts = null
       pid_mode = null
       envs     = null
-      command  = null
+      command  = [
+        "--config.file=/etc/prometheus/prometheus.yml", # 為了搭配 lifecycle 否則會崩潰 [1]
+        "--storage.tsdb.path=/prometheus", # [1]
+        "--web.enable-lifecycle", # 關鍵：開啟此項才支援 POST /-/reload
+      ]
       host     = [] # TODO 補齊以維持結構一致
       volumes  = [
         { host = var.prometheus_config_path, container = "/etc/prometheus/prometheus.yml", ro = false },
@@ -34,7 +51,7 @@ locals {
       ]
     },
     "grafana" = {
-      image    = "grafana/grafana:latest"
+      image    = data.docker_registry_image.grafana.sha256_digest
       ports    = [{ internal = 3000, external = 3000 }]
       restart  = "unless-stopped"
       security_opts = null
@@ -49,7 +66,7 @@ locals {
       ]
     },
     "postgres_exporter" = {
-      image    = "prometheuscommunity/postgres-exporter:latest"
+      image    = data.docker_registry_image.postgres_exporter.sha256_digest
       ports    = [{ internal = 9187, external = 9187 }]
       restart  = "unless-stopped"
       security_opts = null
@@ -74,7 +91,7 @@ locals {
       volumes = []
     },
     "node_exporter" = {
-      image    = "prom/node-exporter:latest"
+      image    = data.docker_registry_image.node_exporter.sha256_digest
       ports    = [{ internal = 9100, external = 9100 }]
       restart  = "unless-stopped"
       security_opts = null

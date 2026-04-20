@@ -10,6 +10,10 @@ terraform {
   }
 }
 
+data "docker_registry_image" "portainer" {
+  name = "portainer/portainer-ce:2.21.5"
+}
+
 module "generic_worker" {
   source       = "../generic_docker_container"
   main_name    = var.main_name
@@ -20,7 +24,7 @@ module "generic_worker" {
 locals {
   apps = {
     "portainer" = {
-      image    = "portainer/portainer-ce:latest"
+      image    = data.docker_registry_image.portainer.sha256_digest
       ports    = [{ internal = 9000, external = 9000 }]
       restart  = "unless-stopped"
       security_opts = ["no-new-privileges:true"]
