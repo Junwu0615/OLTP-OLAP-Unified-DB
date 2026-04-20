@@ -147,18 +147,18 @@ setup:
 	ansible-galaxy collection install community.docker
 
 infra:
-	@echo "* Deploying Infrastructure ... ( Monitoring )"
+	@echo "* Terraform: Deploying Infrastructure ..."
 	cd $(TERRAFORM_DIR) && terraform apply -auto-approve
 
 config:
-	@echo "* Applying Configurations ..."
-	cd $(ANSIBLE_DIR) && ansible-playbook deploy_config.yml
+	@echo "* Ansible: Applying Configurations ..."
+	cd $(ANSIBLE_DIR) && ansible-playbook -i inventory.ini playbook.yml
 
 all: infra config
 	@echo "* 依賴 Terraform + Ansible 服務全部啟動 ..."
 
 destroy:
-	@echo "* Destroy Infrastructure ..."
+	@echo "* Terraform: Destroy Infrastructure ..."
 	cd $(TERRAFORM_DIR) && terraform destroy -auto-approve
 
 graph:

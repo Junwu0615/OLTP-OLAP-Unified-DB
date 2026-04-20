@@ -142,7 +142,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   make build
   make setup
   
-  # depends on 'Compose' service
+  # depends on 'Compose' service ( Airflow + Postgresql )
   make postgresql
   make airflow
   

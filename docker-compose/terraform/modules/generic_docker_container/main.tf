@@ -48,6 +48,7 @@ resource "docker_container" "this" {
   restart       = each.value.restart
   env           = each.value.envs
   security_opts = each.value.security_opts
+  command       = each.value.command
 
   labels {
     label = "com.docker.compose.project"

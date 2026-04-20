@@ -52,8 +52,12 @@ terraform destroy -auto-approve
 # Terraform 如何自動理清這些模組間的依賴關係
 terraform graph
 
+# 測試內容方式
+1. terraform console
+2. module.monitoring_services.module.generic_worker.docker_container.this["prometheus"].command
+
 # 基於動態參數調整並重啟服務
-ansible-playbook -i inventory.init playbook.yml
+ansible-playbook -i inventory.ini playbook.yml
 
 # 手動強制觸發情境 (for tags=reload)
 ansible-playbook deploy_config.yml --tags reload

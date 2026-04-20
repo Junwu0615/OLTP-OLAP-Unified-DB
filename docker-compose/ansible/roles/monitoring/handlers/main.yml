@@ -6,5 +6,4 @@
     url: "http://localhost:9090/-/reload"
     method: POST
     status_code: 200
-  tags: reload
 #  when: config_result.changed # TODO [法 1] 只有當設定檔真的有變動時才執行
