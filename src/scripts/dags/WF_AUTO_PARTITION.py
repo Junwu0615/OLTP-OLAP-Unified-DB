@@ -42,7 +42,7 @@ dag = create_dag(
 
 def check_branch(**kwargs) -> list:
     dag_run = kwargs.get('dag_run').conf if kwargs.get('dag_run') is not None else {}
-    _get_list = dag_run.get('trigger_file', [])
+    _get_list = dag_run.get('trigger_file', ['fact_production', 'machine_status_logs', 'production_records'])
     logging.warning(f'target_list: {_get_list}')
     return [f'{DAG_ID}.{i}' for i in _get_list]
 
