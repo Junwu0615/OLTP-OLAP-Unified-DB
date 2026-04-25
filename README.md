@@ -170,12 +170,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 <br>
 
 ### *D.　Implementation*
-- #### *I.　Roadmap*
 - ![PNG](./assets/roadmap.PNG)
-
-- #### *II.　[About SQL Something Detail](./docs/sql.md)*
-
-- #### *III.　Project Tree*
+- #### *I.　[About SQL Something Detail](./docs/sql.md)*
+- #### *II.　Project Tree*
   ```
   tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
   tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
