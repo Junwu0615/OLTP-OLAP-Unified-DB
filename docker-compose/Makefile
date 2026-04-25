@@ -23,7 +23,7 @@ MQTT_CONTENT = mqtt
 KAFKA_CONTENT = kafka kafka-connect kafka-ui
 
 .PHONY: build up down down-v ps rm \
-fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode kafka-chow \
+fix-sock db-wait list-configs prune get-chown-all dev-mode prod-mode kafka-chow \
 airflow monitoring portainer postgresql mqtt kafka \
 setup config infra all destroy graph
 
@@ -79,9 +79,8 @@ list-configs:
 	@echo "偵測到的子服務設定檔如下："
 	@echo "$(ALL_COMPOSE)" | tr ' ' '\n'
 
-clear-force:
+prune:
 	@echo "清理 build cache + container + image + network + volume"
-	docker compose -f $(COMPOSE_DIR) down -v --remove-orphans
 	docker system prune -a --volumes -f
 
 get-chown-all:
