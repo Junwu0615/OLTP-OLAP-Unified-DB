@@ -4,39 +4,48 @@ COMPOSE_DIR = ./docker-compose.yaml
 TERRAFORM_DIR = ./terraform
 ANSIBLE_DIR = ./ansible
 AIRFLOW_DIR = ./docker/airflow
+KAFKA_DIR = ./docker/iot-platform/data/kafka_data
 
-ALL_COMPOSE := $(wildcard ./docker/*/docker-compose.yaml)
+ALL_COMPOSE := $(wildcard ./docker/*/*-compose.yaml ./docker/*/*-compose.yml)
 
 SUB_SERVICES = ./docker/airflow/docker-compose.yaml \
 			   ./docker/monitoring/docker-compose.yaml \
 			   ./docker/portainer/docker-compose.yaml \
-			   ./docker/postgresql/docker-compose.yaml
-
-BUILD_SERVICES =./docker/postgresql/docker-compose.yaml
+			   ./docker/postgresql/docker-compose.yaml \
+			   ./docker/iot-platform/mqtt-compose.yaml \
+			   ./docker/iot-platform/kafka-compose.yaml
 
 AIRFLOW_CONTENT = airflow-webserver airflow-scheduler airflow-worker airflow-triggerer redis
 MONITORING_CONTENT = grafana prometheus node_exporter postgres_exporter
 POSTGRESQL_CONTENT = dev-db pgadmin
 PORTAINER_CONTENT = portainer
+MQTT_CONTENT = mqtt
+KAFKA_CONTENT = kafka kafka-connect kafka-ui
 
 .PHONY: build up down down-v ps rm \
-fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode \
-airflow monitoring portainer postgresql \
+fix-sock db-wait list-configs clear-force get-chown-all dev-mode prod-mode kafka-chow \
+airflow monitoring portainer postgresql mqtt kafka \
 setup config infra all destroy graph
 
 init:
-	@echo "* 針對子服務進行必要性 init"
-	@echo "1. 正在建立 Airflow 必要目錄 ..."
+	@echo "* 進行特定服務 init"
+	@echo "[1.1] 正在建立 Airflow 必要目錄 ..."
 	mkdir -p $(AIRFLOW_DIR)/config $(AIRFLOW_DIR)/dags $(AIRFLOW_DIR)/logs $(AIRFLOW_DIR)/plugins
-	@echo "2. 修正 Airflow 目錄權限, 讓目錄及其子目錄歸屬給 UID 50000 + 確保權限足夠 (rwxr-xr-x)"
+	@echo "[1.2] 修正 Airflow 目錄權限, 讓目錄及其子目錄歸屬給 UID 50000 + 確保權限足夠 (rwxr-xr-x)"
 	@make prod-mode
-	@echo "3. 執行 Airflow 資料庫初始化 ..."
+	@echo "[1.3] 執行 Airflow 資料庫初始化 ..."
 	docker compose -f $(COMPOSE_DIR) up airflow-init
-	@echo "4. 環境預熱完成 ..."
+
+	@echo "[2] 建立 iot-platform 網路"
+	docker network inspect ooud-cluster_iot_network >/dev/null 2>&1 || \
+    docker network create ooud-cluster_iot_network
+
+	@echo "[3] 環境預熱完成 ..."
 
 build:
-	@echo "* 針對子服務進行必要性 build (no-cache)..."
-	docker compose -f $(BUILD_SERVICES) build --no-cache
+	@echo "* 進行特定服務 build (no-cache)..."
+	docker compose -f ./docker/postgresql/docker-compose.yaml build --no-cache
+	docker compose -f ./docker/iot-platform/kafka-compose.yaml build --no-cache
 
 up: fix-sock db-wait copy-dag
 	@echo "* Notice | 指定單一服務指令 | ex: docker compose -f ./docker-compose.yaml up -d grafana"
@@ -88,6 +97,12 @@ prod-mode:
 	sudo chown -R 50000:0 $(AIRFLOW_DIR)
 	sudo chmod -R 775 $(AIRFLOW_DIR)
 
+kafka-chown:
+	@echo "設定 kafka 擁有顯式持久化資料權限"
+	mkdir -p $(KAFKA_DIR)
+	sudo chown -R 1000:0 $(KAFKA_DIR)
+	sudo chmod -R 775 $(KAFKA_DIR)
+
 copy-dag:
 	@echo "將開發 DAGs 複製到 Airflow 容器中的 DAGs 對應資料夾 | 先刪除目錄下所有內容 | 執行複製"
 	@make dev-mode
@@ -115,6 +130,16 @@ portainer: fix-sock
 	@echo "重新啟動 Portainer 相關服務"
 	docker compose -f $(COMPOSE_DIR) down $(PORTAINER_CONTENT)
 	docker compose -f $(COMPOSE_DIR) up -d $(PORTAINER_CONTENT)
+
+mqtt: fix-sock
+	@echo "重新啟動 MQTT 相關服務"
+	docker compose -f $(COMPOSE_DIR) down $(MQTT_CONTENT)
+	docker compose -f $(COMPOSE_DIR) up -d $(MQTT_CONTENT)
+
+kafka: fix-sock kafka-chown
+	@echo "重新啟動 Kafka 相關服務"
+	docker compose -f $(COMPOSE_DIR) down $(KAFKA_CONTENT)
+	docker compose -f $(COMPOSE_DIR) up -d $(KAFKA_CONTENT)
 
 refresh: fix-sock
 	@echo "1. 檢查是否有定義 container 且不為空"

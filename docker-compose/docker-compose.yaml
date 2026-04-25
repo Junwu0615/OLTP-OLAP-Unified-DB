@@ -5,4 +5,6 @@ include:
   - path: ./docker/monitoring/docker-compose.yaml
   - path: ./docker/portainer/docker-compose.yaml
   - path: ./docker/postgresql/docker-compose.yaml
+  - path: ./docker/iot-platform/mqtt-compose.yaml
+  - path: ./docker/iot-platform/kafka-compose.yaml
 #  - path: ./docker/powa/docker-compose.yaml

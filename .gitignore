@@ -12,6 +12,9 @@ docker-compose/terraform/.terraform.lock.hcl
 
 docker-compose/docker/portainer/data
 
+docker-compose/docker/iot-platform/data/*
+docker-compose/docker/iot-platform/config/passwd
+
 docker-compose/docker/airflow/config
 docker-compose/docker/airflow/dags
 docker-compose/docker/airflow/logs

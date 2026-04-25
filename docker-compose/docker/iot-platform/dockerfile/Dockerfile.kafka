@@ -1,0 +1,4 @@
+FROM confluentinc/cp-kafka-connect:7.6.1
+
+# 使用 confluent-hub 客戶端安裝 MQTT Source Connector
+RUN confluent-hub install --no-prompt confluentinc/kafka-connect-mqtt:latest

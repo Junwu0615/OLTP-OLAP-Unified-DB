@@ -84,10 +84,6 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Add Makefile | for `docker-compose` | 2026-04-11 |
 | Add Airflow Config UI | `Trigger w/ Config` | 2026-04-18 |
 | Update DAGs Coding Style | - | 2026-04-18 |
-| Create Materialized View ( MV ) | 建立物化檢視表 | - |
-| Grafana Dashboard | update `htap_grafana.json` | - |
-| Analytical Queries | - | - |
-| Multi-Instance Simulate | like Edge Machine | X |
 | Add Terraform | Step 1 : Docker Provider 體驗宣告式配置 | 2026-04-19 |
 | Terraform | docker-compose 配置轉移 | 2026-04-19 |
 | Add Ansible | Step 2 : 負責節點的初始化 + 設定檔 | 2026-04-19 |
@@ -96,6 +92,11 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Terraform & Ansible | 體驗 Ansible 如何補足 Terraform 的不足 | 2026-04-19 |
 | Terraform Modularization | - | 2026-04-20 |
 | Ansible Modularization | - | 2026-04-20 |
+| Add `iot-platform` | MQTT Broker + Apache Kafka | 2026-04-25 |
+| Multi-Instance Simulate | like Edge Machine | - |
+| Create Materialized View ( MV ) | 建立物化檢視表 | - |
+| Grafana Dashboard | update `htap_grafana.json` | - |
+| Analytical Queries | - | - |
 | Add Kubernetes | Step 3 : Kind ( K8s in Docker ) | - |
 | K8s 複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
 
@@ -111,6 +112,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   | Airflow | - | [8100](http:127.0.0.1:8100) |
   | ~~PostgreSQL~~ | for `PoWA` | [5431](http:127.0.0.1:5431) |
   | ~~PoWA UI Web~~ | for `PoWA` | [8888](http:127.0.0.1:8888) |
+  | MQTT Broker | for `iot-platform` | [1883](http:127.0.0.1:1883) |
+  | Kafka | for `iot-platform` | [9092](http:127.0.0.1:9092) |
+  | Kafka UI | for `iot-platform` | [9093](http:127.0.0.1:9093) |
   | Grafana | for `Monitoring` | [3000](http:127.0.0.1:3000) |
   | Prometheus | for `Monitoring` | [9090](http:127.0.0.1:9090) |
   | Node Exporter | for `Monitoring` | [9100](http:127.0.0.1:9100) |
@@ -145,6 +149,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   # depends on 'Compose' service ( Airflow + Postgresql )
   make postgresql
   make airflow
+  make mqtt
+  make kafka
   
   # depends on 'Terraform' + 'Ansible' services ( Monitoring + Portainer )
   make all
