@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
-import os, sys, time, json, copy, logging, yaml
-import re, collections, operator, random, math
-import statistics, pathlib
-import psycopg2
-
-# from dotenv import load_dotenv
-from decimal import Decimal, ROUND_HALF_UP
-from datetime import datetime, timedelta, timezone
-from typing import Callable, Iterator, Tuple, Any, Dict, List, Optional
+from src.config import *
 
 MODULE_NAME = __name__.upper()
 
@@ -39,3 +31,9 @@ def get_now(hours: int=None, minutes: int=None, seconds: int=None, tzinfo: timez
         target_time = target_time.replace(tzinfo=tzinfo)
 
     return target_time
+
+
+def get_yaml_config(file_path: str) -> dict:
+    with open(file_path, 'r') as f:
+        config = yaml.safe_load(f)
+    return config
