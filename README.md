@@ -2,6 +2,7 @@
 [![](https://img.shields.io/badge/Operating_System-Windows_11-blue.svg?style=plastic)](https://www.microsoft.com/zh-tw/software-download/windows10) <br> 
 [![](https://img.shields.io/badge/Technology-Python-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
 [![](https://img.shields.io/badge/Technology-PostgreSQL-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
+[![](https://img.shields.io/badge/Technology-GCP-important.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB) 
 [![](https://img.shields.io/badge/Technology-Kubernetes-important.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB) 
 [![](https://img.shields.io/badge/Technology-Docker-yellow.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB) <br>
 [![](https://img.shields.io/badge/Technology-OLTP-critical.svg?style=plastic)](https://github.com/Junwu0615/OLTP-OLAP-UNIFIED-DB)
@@ -86,9 +87,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Add Makefile | for `docker-compose` | 2026-04-11 |
 | Add Airflow Config UI | `Trigger w/ Config` | 2026-04-18 |
 | Update DAGs Coding Style | - | 2026-04-18 |
-| Add Terraform | Step 1 : Docker Provider 體驗宣告式配置 | 2026-04-19 |
+| Terraform | Docker Provider 體驗宣告式配置 | 2026-04-19 |
 | Terraform | docker-compose 配置轉移 | 2026-04-19 |
-| Add Ansible | Step 2 : 負責節點的初始化 + 設定檔 | 2026-04-19 |
+| Ansible | 負責節點的初始化 + 設定檔 | 2026-04-19 |
 | Add Makefile | for `terraform + ansible` | 2026-04-19 |
 | Terraform vs. Docker Compose | 體驗狀態管理差異性 ; 可救回配置崩潰，提高 HA | 2026-04-19 |
 | Terraform & Ansible | 體驗 Ansible 如何補足 Terraform 的不足 | 2026-04-19 |
@@ -99,13 +100,17 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Multi-Instance Simulation | like real-edge : `v2` | 2026-04-28 |
 | Add MQTT Logic | for `command_platform` | 2026-04-28 |
 | Add MQTT Logic | for `multi-instance` | - |
-| Add Kafka Logic | - | - |
+| Add Kafka Logic | `kafka-connect` | 2026-04-30 |
+| Add Kafka Logic | `comsumers` | - |
 | Add API Service Logic | - | - |
 | `v2` make Dockerfile | - | - |
 | Grafana Dashboard | update `htap_grafana.json` | - |
 | Create Materialized View ( MV ) | 建立物化檢視表 | - |
 | Analytical Queries | - | - |
-| Add Kubernetes | Step 3 : Kind ( K8s in Docker ) | - |
+| Kubernetes | 入門 : `Minikube` | - |
+| Kubernetes | 進階 ( HA ) : `K3s` + `VMware` | - |
+| Kubernetes | 底層 ( Hard Way ) : `Kubeadm` + `VMware` | - |
+| Kubernetes | 公有雲 : `Google Kubernetes Engine ( GKE )` | - |
 | K8s 複雜度 | 體驗 Pod、Service、Ingress 抽象層 | - |
 
 <br>
@@ -170,7 +175,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
   
 - #### *III.　Makefile Execute ( ⭐ K8s + Helm + Terraform + Ansible )*
   ```
-  kind
+  ...
   ```
 
 <br>
