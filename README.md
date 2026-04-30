@@ -139,6 +139,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 - #### *II.　[Service Startup Order](./docs/service_startup_order.md)*
 - #### *III.　[WSL2 Startup Docker Engine](./docs/wsl2_startup_docker_engine.md)*
 - #### *IV.　[Terraform & Ansible](./docs/terraform_ansible.md)*
+- #### *V.　[About K8s](./docs/k8s.md)*
 
 <br>
 
@@ -184,8 +185,7 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 ### *D.　Implementation*
 - ![PNG](./assets/roadmap.PNG)
 - #### *I.　[About SQL Something Detail](./docs/sql.md)*
-- #### *II.　[About K8s](./docs/k8s.md)*
-- #### *III.　Project Tree*
+- #### *II.　Project Tree*
   ```
   tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
   tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
