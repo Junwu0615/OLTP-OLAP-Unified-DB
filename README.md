@@ -143,62 +143,74 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 
 <br>
 
-### *C.　Command Platform*
+### *C.　Command Platform ( Makefile Execute )*
 
-<details open>
-    <summary><b> I.　Makefile Execute ( Docker-Compose ) </b></summary>
+<details>
+<summary><b><i>　I.　Docker Compose</i></b></summary>
+<ul>
 
-    
-    cd docker-compose
-    make init
-    make build
-    make up
-    
+```bash
+cd docker-compose
+make init
+make build
+make up
+```
+</ul>
 </details>
 
-- #### *I.　Makefile Execute ( Docker-Compose )*
-  ```
-  cd docker-compose
-  make init
-  make build
-  make up
-  ```
-  
-- #### *II.　Makefile Execute ( ⭐ Terraform + Ansible + Compose )*
-  ```
-  cd docker-compose
-  
-  # initialization
-  make init
-  make build
-  make setup
-  
-  # depends on 'Compose' service ( Airflow + Postgresql + MQTT + Kafka )
-  make postgresql
-  make airflow
-  make mqtt
-  make kafka
-  
-  # depends on 'Terraform' + 'Ansible' services ( Monitoring + Portainer )
-  make all
-  
-  # service shutdown
-  make down
-  make destroy
-  ```
-  
-- #### *III.　Makefile Execute ( ⭐ K8s + Helm + Terraform + Ansible )*
-  ```
-  ...
-  ```
+<br>
+
+<details>
+<summary><b><i>　II.　Terraform + Ansible + Compose </i></b></summary>
+<ul>
+
+```bash
+cd docker-compose
+
+# initialization
+make init
+make build
+make setup
+
+# depends on 'Compose' service ( Postgresql + Airflow + MQTT + Kafka )
+make postgresql
+make airflow
+make mqtt
+make kafka
+
+# depends on 'Terraform' + 'Ansible' services ( Monitoring + Portainer )
+make all
+
+# service shutdown
+make down
+make destroy
+```
+</ul>
+</details>
+
+<br>
+
+<details>
+<summary><b><i>　III.　K8s + Helm + Terraform + Ansible </i></b></summary>
+<ul>
+
+```bash
+...
+```
+</ul>
+</details>
 
 <br>
 
 ### *D.　Implementation*
 - ![PNG](./assets/roadmap.PNG)
 - #### *I.　[About SQL Something Detail](./docs/sql.md)*
-- #### *II.　Project Tree*
-  ```
+
+<details>
+<summary><b><i>　II.　Project Tree </i></b></summary>
+<ul>
+
+  ```bash
   tree -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
   tree -d -I 'venv|.git|__pycache__|docs|logs|assets|kafka_data'
 
@@ -352,7 +364,8 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
           ├── conn.py
           └── utils.py
   ```
-
+</ul>
+</details>
 
 <br>
 
