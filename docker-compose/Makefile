@@ -4,7 +4,10 @@ COMPOSE_DIR = ./docker-compose.yaml
 TERRAFORM_DIR = ./terraform
 ANSIBLE_DIR = ./ansible
 AIRFLOW_DIR = ./docker/airflow
-KAFKA_DIR = ./docker/iot-platform/data/kafka_data
+KAFKA_DIR = ./docker/iot-platform
+
+SERVICE_PATH = 127.0.0.1
+KAFKA_CONN_ALL_JSON := $(wildcard ./docker/iot-platform/config/connectors/*.json)
 
 ALL_COMPOSE := $(wildcard ./docker/*/*-compose.yaml ./docker/*/*-compose.yml)
 
@@ -25,7 +28,8 @@ KAFKA_CONTENT = kafka kafka-connect kafka-ui
 .PHONY: build up down down-v ps rm \
 fix-sock db-wait list-configs prune get-chown-all dev-mode prod-mode kafka-chow \
 airflow monitoring portainer postgresql mqtt kafka \
-setup config infra all destroy graph
+setup config infra all destroy graph \
+kafka-connect-create kafka-connect-upsert kafka-connect-status kafka-connect-del
 
 init:
 	@echo "* 進行特定服務 init"
@@ -98,9 +102,9 @@ prod-mode:
 
 kafka-chown:
 	@echo "設定 kafka 擁有顯式持久化資料權限"
-	mkdir -p $(KAFKA_DIR)
-	sudo chown -R 1000:0 $(KAFKA_DIR)
-	sudo chmod -R 775 $(KAFKA_DIR)
+	mkdir -p $(KAFKA_DIR)/data/kafka_data
+	sudo chown -R 1000:0 $(KAFKA_DIR)/data/kafka_data
+	sudo chmod -R 775 $(KAFKA_DIR)/data/kafka_data
 
 copy-dag:
 	@echo "將開發 DAGs 複製到 Airflow 容器中的 DAGs 對應資料夾 | 先刪除目錄下所有內容 | 執行複製"
@@ -192,3 +196,50 @@ destroy:
 graph:
 	@echo "* 顯示 Terraform 如何理清模組間依賴關係 ..."
 	cd $(TERRAFORM_DIR) && terraform graph
+
+kafka-connect-create:
+	@echo "* 根據指定路徑將 Kafka Connection 進行創建設定 ..."
+	@for file in $(KAFKA_CONN_ALL_JSON); do \
+  		NAME=$$(basename $$file .json); \
+		echo "\n# 上傳配置: $$NAME"; \
+		curl -s -X POST -H "Content-Type: application/json" \
+			--data @$$file \
+			http://$(SERVICE_PATH):8083/connectors; \
+		echo "\n\n----------------------------------------"; \
+	done
+	sleep 3
+	@echo "\n\n";
+	@make kafka-connect-status
+
+kafka-connect-upsert:
+	@echo "* 依據指定路徑將 Kafka Connection 進行同步配置 ..."
+	@for file in $(KAFKA_CONN_ALL_JSON); do \
+		NAME=$$(basename $$file .json); \
+		echo "\n# 上傳/同步配置: $$NAME"; \
+		cat $$file | jq '.config' | curl -s -X PUT -H "Content-Type: application/json" \
+			--data @- \
+			http://$(SERVICE_PATH):8083/connectors/$$NAME/config; \
+		echo "\n\n----------------------------------------"; \
+	done
+	sleep 3
+	@echo "\n\n";
+	@make kafka-connect-status
+
+kafka-connect-del:
+	@echo "* 根據指定路徑將 Kafka Connection 進行移除設定 ..."
+	@for file in $(KAFKA_CONN_ALL_JSON); do \
+		NAME=$$(basename $$file .json); \
+		echo "\n# 移除配置: $$NAME"; \
+		curl -s -X DELETE \
+			http://$(SERVICE_PATH):8083/connectors/$$NAME; \
+	done
+	sleep 3
+	@echo "\n\n";
+	@make kafka-connect-status
+
+kafka-connect-status:
+	@echo "* 當前 Kafka Connection 運作狀態"
+	@for name in $$(curl -s http://$(SERVICE_PATH):8083/connectors | jq -r '.[]'); do \
+		STATE=$$(curl -s http://$(SERVICE_PATH):8083/connectors/$$name/status | jq -r '.tasks[0].state // "N/A"'); \
+		echo "    # Connector: [ $$name ] -> Status: [ $$STATE ]"; \
+	done

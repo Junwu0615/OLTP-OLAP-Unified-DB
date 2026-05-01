@@ -144,6 +144,18 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 <br>
 
 ### *C.　Command Platform*
+
+<details open>
+    <summary><b> I.　Makefile Execute ( Docker-Compose ) </b></summary>
+
+    
+    cd docker-compose
+    make init
+    make build
+    make up
+    
+</details>
+
 - #### *I.　Makefile Execute ( Docker-Compose )*
   ```
   cd docker-compose
