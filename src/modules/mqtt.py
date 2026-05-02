@@ -48,7 +48,7 @@ import paho.mqtt.client as mqtt
 from queue import Queue
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
-from src.utils.utils import *
+from src.utils.tools import *
 from src.config.mqtt import *
 from src.modules.log import Logger
 

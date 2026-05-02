@@ -1,17 +1,10 @@
 # -*- coding: utf-8 -*-
-"""
-TODO
-    Update Date: 2026-04-28
-    Description:
-    Notice:
-"""
 import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..')))
 
 from src.modules.log import Logger
-from src.utils.utils import *
+from src.utils.tools import *
 from src.utils.conn import get_conn, close_conn, table_exists
-
 
 logging = Logger(console_name='.main')
 

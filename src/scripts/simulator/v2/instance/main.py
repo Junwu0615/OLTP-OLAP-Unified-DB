@@ -9,7 +9,8 @@ import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..')))
 
 from src.modules.log import Logger
-from src.utils.utils import *
+from src.utils.tools import *
+from src.utils.kafka_tool import *
 from src.config import *
 from src.config.simulator import MachineStatusSimulator
 
@@ -274,69 +275,6 @@ def simulate_stream(cursor, event_dict: dict):
             logging.error('[# Other] Exception', exc_info=True)
 
 
-def kafka_murmur2(data: bytes):
-    """
-    Kafka 官方 Java 版 Murmur2 的 Python 實作
-    """
-    length = len(data)
-    seed = 0x9747b28c
-    # 'm' and 'r' are mixing constants generated offline.
-    # They're not so unique, so they don't have to be random.
-    m = 0x5bd1e995
-    r = 24
-
-    # Initialize the hash to a 'random' value
-    h = seed ^ length
-    length_4 = length // 4
-
-    for i in range(length_4):
-        i_4 = i * 4
-        k = struct.unpack('<I', data[i_4:i_4 + 4])[0]
-        k = (k * m) & 0xffffffff
-        k ^= (k >> r) & 0xffffffff
-        k = (k * m) & 0xffffffff
-        h = (h * m) & 0xffffffff
-        h ^= k
-
-    # Handle the last few bytes of the input array
-    extra_bytes = length % 4
-    if extra_bytes == 3:
-        h ^= (data[(length & ~3) + 2] << 16) & 0xffffffff
-    if extra_bytes >= 2:
-        h ^= (data[(length & ~3) + 1] << 8) & 0xffffffff
-    if extra_bytes >= 1:
-        h ^= (data[length & ~3]) & 0xffffffff
-        h = (h * m) & 0xffffffff
-
-    h ^= (h >> 13) & 0xffffffff
-    h = (h * m) & 0xffffffff
-    h ^= (h >> 15) & 0xffffffff
-
-    return h
-
-
-def get_partition_id(consumer, topic_name: str, topic_key: str) -> int:
-    # 取得分區總數
-    cluster_metadata = consumer.list_topics(topic=topic_name)
-    partitions = cluster_metadata.topics[topic_name].partitions
-    num_partitions = len(partitions)
-
-    # 計算 Partition ID
-    # target_partition = (mmh3.hash(topic_key.encode('utf-8'), seed=0x12345678) & 0x7fffffff) % num_partitions
-    target_partition = (kafka_murmur2(topic_key.encode('utf-8')) & 0x7fffffff) % num_partitions
-
-    logging.info(f"機台 {TARGET_MACH} 對應 Partition 分區 ID 為: {target_partition}")
-    return target_partition
-
-
-def delivery_report(err, msg):
-    if err is not None:
-        logging.warning(f"訊息推送失敗: {err}")
-    else:
-        # logging.info(f"訊息成功推送到 {msg.topic()} [{msg.partition()}]")
-        pass
-
-
 def consumer_message(stop_event, **kwargs):
     # TODO 消費者配置
     _config = {
@@ -352,11 +290,11 @@ def consumer_message(stop_event, **kwargs):
     consumer.assign([tp])
 
 
-    _config = {
-        'bootstrap.servers': f'{kafka['host']}:{kafka['port']}',
-        'compression.type': 'lz4'
-    }
-    producer = Producer(_config)
+    # _config = {
+    #     'bootstrap.servers': f'{kafka['host']}:{kafka['port']}',
+    #     'compression.type': 'lz4'
+    # }
+    # producer = Producer(_config)
 
     try:
         while not stop_event.is_set():
@@ -385,20 +323,19 @@ def consumer_message(stop_event, **kwargs):
                 logging.info(f"[{MAIN_NAME}] 收到來自 {key}: {data}")
 
 
+                # TODO 用全域 QUEUE 接收儲存即完成該業務
 
-                # 使用 producer 發送新訊息
-                processed_data = f"Processed: {data}"
-                producer.produce(
-                    topic='inst.mach-status',
-                    key=msg.key(),  # 保持相同的 Key，確保分區一致性
-                    value=processed_data.encode('utf-8'),
-                    callback=delivery_report
-                )
-
-                # 記得呼叫 poll(0) 觸發生產者的 callback
-                producer.poll(0)
-
-
+                # # 使用 producer 發送新訊息
+                # processed_data = f"Processed: {data}"
+                # producer.produce(
+                #     topic='inst.mach-status',
+                #     key=msg.key(),  # 保持相同的 Key，確保分區一致性
+                #     value=processed_data.encode('utf-8'),
+                #     callback=producer_on_message
+                # )
+                #
+                # # 記得呼叫 poll(0) 觸發生產者的 callback
+                # producer.poll(0)
 
 
                 # TODO 處理業務邏輯
@@ -415,34 +352,10 @@ def consumer_message(stop_event, **kwargs):
     finally:
         consumer.close()
         logging.warning(f'[{MAIN_NAME}] 已安全關閉 consumer 連線 ...')
-        producer.flush()
+        # producer.flush()
 
 
-def start_service(threads, service_function: callable, **kwargs):
-    service_thread = threading.Thread(
-        target=service_function,
-        daemon=True,  # 當主執行緒結束時，子執行緒會被強制終止
-        kwargs=kwargs,
-    )
-    service_thread.start()
-    threads.append(service_thread)
-    logging.warning(f'[{MAIN_NAME}] {kwargs.get('title', '服務')}已啟動...')
-
-
-def stop_all_services(stop_event, threads: list):
-    logging.error(f'[{MAIN_NAME}] 正在向所有執行緒發出停止訊號...', exc_info=False)
-    stop_event.set()  # 發出停止訊號
-
-    # 等待所有執行緒結束
-    for thread in threads:
-        if thread.is_alive():
-            logging.info(f'[{MAIN_NAME}] 等待 {thread.name} 執行緒結束...')
-            thread.join()
-
-    logging.warning('\n\n' + logging.title_log(f'[{MAIN_NAME}] 所有執行緒服務已確實關閉'))
-
-
-def main(target_mach: str):
+def main():
     """
     TODO 動作事項
         - 實例 : N
@@ -457,12 +370,12 @@ def main(target_mach: str):
     logging.warning(f'[{MAIN_NAME}] Starting Factory Stream Simulation ...')
 
     try:
-        start_service(threads, consumer_message, **{
+        start_service(MAIN_NAME, threads, consumer_message, **{
             'title': '「消費 mqtt_raw.cp.mach-order 訂單訊息」服務',
             'stop_event': stop_event,
         })
 
-        # start_service(threads, simulate_stream, **{
+        # start_service(MAIN_NAME, threads, simulate_stream, **{
         #     'title': '「傳送邊緣數據處理」服務',
         #     'stop_event': stop_event,
         # })
@@ -474,8 +387,8 @@ def main(target_mach: str):
         logging.error('偵測到 Ctrl+C，正在關閉連線 ...', exc_info=False)
 
     finally:
-        stop_all_services(stop_event, threads)
+        stop_all_services(MAIN_NAME, stop_event, threads)
 
 
 if __name__ == '__main__':
-    main(TARGET_MACH)
+    main()

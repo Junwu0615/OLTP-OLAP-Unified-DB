@@ -1,5 +1,5 @@
 # -*- coding: utf-8 -*-
-from src.utils.utils import *
+from src.utils.tools import *
 from colorlog import ColoredFormatter
 from logging.handlers import RotatingFileHandler
 
@@ -19,6 +19,7 @@ COLORS_CONFIG = {
 }
 FILE_FMT = '[%(asctime)s] %(levelname)s: %(message)s'
 CONSOLE_FMT = '%(log_color)s[%(asctime)s] %(levelname)s: %(message)s'
+
 
 class Logger:
     def __init__(self, console_name: str=None, file_name: str=None,

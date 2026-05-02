@@ -3,13 +3,12 @@ import os, sys
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..')))
 
 from src.modules.log import Logger
-from src.utils.utils import *
+from src.utils.tools import *
 from src.config import *
 from confluent_kafka.admin import (
     AdminClient,
     NewTopic
 )
-
 
 logging = Logger(console_name='.main')
 
