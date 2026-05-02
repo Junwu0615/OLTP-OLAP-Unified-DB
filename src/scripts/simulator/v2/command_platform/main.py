@@ -190,7 +190,7 @@ def main():
             - 「建立生產訂單」
     """
     ms, conn, cursor = None, None, None
-    logging.warning('[# command_platform] Starting Factory Stream Simulation...')
+    logging.warning('[# command_platform] Starting Factory Stream Simulation ...')
     try:
         conn = get_conn(db, logging)
         cursor = conn.cursor()
@@ -211,9 +211,9 @@ def main():
         simulate_stream(ms, conn, cursor, event_dict)
 
     except KeyboardInterrupt:
-        logging.error('偵測到 Ctrl+C，正在關閉連線...', exc_info=False)
+        logging.error('偵測到 Ctrl+C，正在關閉連線 ...', exc_info=False)
         conn.commit()
-        logging.error('已落實最後一次事務提交...', exc_info=False)
+        logging.error('已落實最後一次事務提交 ...', exc_info=False)
 
     finally:
         close_conn(conn, cursor, logging)

@@ -7,7 +7,7 @@ AIRFLOW_DIR = ./docker/airflow
 KAFKA_DIR = ./docker/iot-platform
 
 SERVICE_PATH = 127.0.0.1
-KAFKA_CONN_ALL_JSON := $(wildcard ./docker/iot-platform/config/connectors/*.json)
+KAFKA_CONN_ALL_JSON := $(wildcard ./docker/iot-platform/config/connectors/source/*.json ./docker/iot-platform/config/connectors/sink/*.json)
 
 ALL_COMPOSE := $(wildcard ./docker/*/*-compose.yaml ./docker/*/*-compose.yml)
 

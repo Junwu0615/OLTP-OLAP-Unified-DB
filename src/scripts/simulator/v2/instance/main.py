@@ -6,12 +6,21 @@ TODO
     Notice:
 """
 import os, sys
+
+import mmh3
+
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..', '..', '..', '..')))
 
 from src.modules.log import Logger
 from src.utils.utils import *
-from src.utils.conn import get_conn, close_conn, table_exists
+from src.config import *
 from src.config.simulator import MachineStatusSimulator
+
+from confluent_kafka import (
+    Consumer,
+    KafkaError,
+    # TopicPartition
+)
 
 
 logging = Logger(console_name='.main')
@@ -23,6 +32,18 @@ config = get_yaml_config(YAML_PATH)
 
 simulate = config['simulate']
 load_cfg = config['load_profile']
+kafka = config['kafka']
+
+TARGET_MACH = os.getenv('TARGET_MACH', 'M-CNC-30')
+ORDER_TOPIC = 'mqtt_raw.cp.mach-order'
+GROUP_ID = 'iot-data-mach-processor'
+
+config = {
+    'bootstrap.servers': f'{kafka['host']}:{kafka['port']}',
+    'group.id': GROUP_ID,
+    'auto.offset.reset': kafka['auto_offset_reset'],
+    'enable.auto.commit': kafka['enable_auto_commit']
+}
 
 
 def update_order_status(cursor, event_dict: dict) -> int:
@@ -209,7 +230,7 @@ def insert_machine_status(cursor, event_dict: dict, _machine_id: int) -> int:
     return 1
 
 
-def simulate_stream(conn, cursor, event_dict: dict):
+def simulate_stream(cursor, event_dict: dict):
     data_qty, done_qty = 0, 0
     last_commit_time = time.time()
     while True:
@@ -263,40 +284,93 @@ def simulate_stream(conn, cursor, event_dict: dict):
             logging.error('[# Other] Exception', exc_info=True)
 
 
-def on_message(client, userdata, msg):
-    client = client._client_id.decode('utf-8')
-    topic = msg.topic
-    payload = msg.payload.decode('utf-8')
-    logger.info(f'client: {client}, topic: {topic}, payload: {payload}')
+def get_partition_id(topic_name: str, machine_id: str) -> int:
+    # 取得分區總數 (動態取得，增加程式魯棒性)
+    cluster_metadata = consumer.list_topics(topic=topic_name)
+    partitions = cluster_metadata.topics[topic_name].partitions
+    num_partitions = len(partitions)
+
+    # 計算 Partition ID (核心邏輯)
+    # Kafka 的公式：(murmur2(key) & 0x7fffffff) % num_partitions
+    key_bytes = machine_id.encode('utf-8')
+    # target_partition = (murmur2(key_bytes, seed=0x12345678) & 0x7fffffff) % num_partitions
+    target_partition = (mmh3.hash(key_bytes, seed=0x12345678) & 0x7fffffff) % num_partitions
+
+    logging.info(f"機台 {machine_id} 對應 Partition 分區 ID 為: {target_partition}")
+    return target_partition
 
 
-def main():
+def on_assign(consumer, partitions):
+    """
+    TODO 共用一個 Group，但每個人只會「認領」自己對應的那條路
+    """
+    target_partition = get_partition_id(ORDER_TOPIC, TARGET_MACH)
+    relevant_partitions = [p for p in partitions if p.partition == target_partition]
+
+    if not relevant_partitions:
+        logging.warning(f"警告： Kafka 沒分配分區 {target_partition} ... 空轉待命中 ...")
+    else:
+        logging.info(f"成功鎖定分區: {target_partition}")
+
+    consumer.assign(relevant_partitions)
+
+
+def main(target_mach: str):
     """
     TODO 動作事項
         - 實例 : N
         \
         - MQTT ( Kafka ) : 「消費」/「傳送」訊息
+            - 消費 : mqtt_raw.cp.mach-order 訂單訊息
+            - 傳送
+        - Offset 儲存：Kafka 根據 Key 紀錄消費數字 ; KEY => ( group.id + Topic + Partition ID )
     """
-    logging.warning('Starting Factory Stream Simulation...')
+    logging.warning(f'[# instance: {target_mach}] Starting Factory Stream Simulation ...')
+    consumer = Consumer(config)
+    consumer.subscribe([ORDER_TOPIC], on_assign=on_assign)
 
-    # consumers from mqtt_raw.cp.mach-order
-    ms = MqttServer(broker_host=MTS_BROKER, broker_port=MTS_BROKER_PORT)
-    ms.start_service(ms.subscriber_topic, **{
-        'title': '訂閱 Topic 服務',
-        'subscriber_list': ['beta/add_content'],
-        'on_message': on_message,
-    })
     try:
-        pass
+        while True:
+            try:
+                msg = consumer.poll(1.0) # 等待 1 秒
+
+                if msg is None: continue
+                if msg.error():
+                    if msg.error().code() == KafkaError._PARTITION_EOF:
+                        # 當前消費完畢 => 目前沒新訊息，繼續等待
+                        logging.info(f"[# instance: {target_mach}] topic: {msg.topic()} | partition: {msg.partition()}")
+                        continue
+                    else:
+                        # 其他錯誤: Broker 斷線、認證失敗 ...etc.
+                        logging.error(f"[# instance: {target_mach}] consumer error: {msg.error()}", exc_info=False)
+                        raise
+
+                key = msg.key().decode('utf-8') if msg.key() else 'N/A'
+                data = msg.value().decode('utf-8')
+                logging.info(f"[# instance: {target_mach}] 收到來自 {key} 的數據: {data}")
+
+                # TODO 處理業務邏輯
+                try:
+                    pass
+
+                    consumer.commit(asynchronous=False) # TODO 處理成功，手動提交 Offset
+
+                except Exception as e:
+                    logging.error(f"[# instance: {target_mach}] "
+                                  f"消費失敗不提交，下次從 offset 繼續開始 ...", exc_info=True)
+
+
+            except Exception as e:
+                logging.error('Exception', exc_info=True)
+
 
     except KeyboardInterrupt:
-        logging.error('偵測到 Ctrl+C，正在關閉連線...', exc_info=False)
-        conn.commit()
-        logging.error('已落實最後一次事務提交...', exc_info=False)
+        logging.error('偵測到 Ctrl+C，正在關閉連線 ...', exc_info=False)
 
     finally:
-        ms.stop_all_services()
+        consumer.close()
+        logging.warning('已確實關閉 consumer 連線 ...')
 
 
 if __name__ == '__main__':
-    main()
+    main(TARGET_MACH)

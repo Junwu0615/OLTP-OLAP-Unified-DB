@@ -99,9 +99,9 @@ OLTP 與 OLAP 的本質差異不在【 資料結構 】，而在【 工作負載
 | Simple Simulation | organizing old versions : `v1` | 2026-04-28 |
 | Multi-Instance Simulation | like real-edge : `v2` | 2026-04-28 |
 | MQTT Logic | for `command_platform` | 2026-04-28 |
-| MQTT Logic | for `multi-instance` | - |
-| Kafka Logic | `kafka-connect` | 2026-04-30 |
-| Kafka Logic | `consumers` | - |
+| Kafka Connect | `source`: producer  | 2026-04-30 |
+| Kafka Connect | `sink`: consumers | - |
+| Kafka Logic | for `instance` | 2026-05-02 |
 | API Service Logic | - | - |
 | `v2` make Dockerfile | - | - |
 | Grafana Dashboard | update `htap_grafana.json` | - |
