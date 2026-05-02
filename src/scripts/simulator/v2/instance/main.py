@@ -15,6 +15,7 @@ from src.config.simulator import MachineStatusSimulator
 
 from confluent_kafka import (
     Consumer,
+    Producer,
     KafkaError,
     TopicPartition
 )
@@ -328,7 +329,16 @@ def get_partition_id(consumer, topic_name: str, topic_key: str) -> int:
     return target_partition
 
 
+def delivery_report(err, msg):
+    if err is not None:
+        logging.warning(f"訊息推送失敗: {err}")
+    else:
+        # logging.info(f"訊息成功推送到 {msg.topic()} [{msg.partition()}]")
+        pass
+
+
 def consumer_message(stop_event, **kwargs):
+    # TODO 消費者配置
     _config = {
         'bootstrap.servers': f'{kafka['host']}:{kafka['port']}',
         'group.id': GROUP_ID,
@@ -340,6 +350,13 @@ def consumer_message(stop_event, **kwargs):
     target_partition = get_partition_id(consumer, ORDER_TOPIC, f"cp/mach-order/{TARGET_MACH}")
     tp = TopicPartition(ORDER_TOPIC, target_partition)
     consumer.assign([tp])
+
+
+    _config = {
+        'bootstrap.servers': f'{kafka['host']}:{kafka['port']}',
+        'compression.type': 'lz4'
+    }
+    producer = Producer(_config)
 
     try:
         while not stop_event.is_set():
@@ -367,9 +384,25 @@ def consumer_message(stop_event, **kwargs):
 
                 logging.info(f"[{MAIN_NAME}] 收到來自 {key}: {data}")
 
+
+
+                # 使用 producer 發送新訊息
+                processed_data = f"Processed: {data}"
+                producer.produce(
+                    topic='inst.mach-status',
+                    key=msg.key(),  # 保持相同的 Key，確保分區一致性
+                    value=processed_data.encode('utf-8'),
+                    callback=delivery_report
+                )
+
+                # 記得呼叫 poll(0) 觸發生產者的 callback
+                producer.poll(0)
+
+
+
+
                 # TODO 處理業務邏輯
                 try:
-                    pass
                     consumer.commit(asynchronous=False)  # TODO 處理成功，手動提交 Offset
 
                 except Exception as e:
@@ -382,6 +415,7 @@ def consumer_message(stop_event, **kwargs):
     finally:
         consumer.close()
         logging.warning(f'[{MAIN_NAME}] 已安全關閉 consumer 連線 ...')
+        producer.flush()
 
 
 def start_service(threads, service_function: callable, **kwargs):
