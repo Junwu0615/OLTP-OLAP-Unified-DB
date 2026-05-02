@@ -112,7 +112,8 @@ def init_transaction_dict(ms, conn, cursor) -> dict:
         event_dict['machine_dict'] = {i[0]:{
             'mach_id': i[1],
             'mach_type': i[2],
-        } for i in machines}
+        # } for i in machines}
+        } for i in machines if i[0] == 'M-CNC-30'} # FIXME DEV
 
         # 取得產品列表
         cursor.execute("""
@@ -124,8 +125,8 @@ def init_transaction_dict(ms, conn, cursor) -> dict:
             'prod_id': i[1],
             'prod_type': i[2],
             'target_qty': i[3],
-        } for i in products}
-
+        # } for i in products}
+        } for i in products if i[2] == 'CNC'} # FIXME DEV
 
         # 初始化第一批訂單
         _ct = insert_production_order(ms, cursor, event_dict)

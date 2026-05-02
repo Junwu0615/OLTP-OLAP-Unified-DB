@@ -223,7 +223,6 @@ def insert_machine_status(cursor, event_dict: dict, _machine_id: int) -> int:
 
 def simulate_stream(cursor, event_dict: dict):
     data_qty, done_qty = 0, 0
-    last_commit_time = time.time()
     while True:
         try:
             now = get_now(hours=8, tzinfo=TZ_UTC_8)
@@ -259,8 +258,7 @@ def simulate_stream(cursor, event_dict: dict):
             ret_2 = ' | '.join([f'{k}[{len(v)}]' for k,v in event_dict['order_queue'].items()])
 
             logging.info(
-                f'\n整體の概要 : '
-                f'當前機台= | '
+                f'\n[{MAIN_NAME}] 整體の概要 : '
                 f'MODE={mode} | '
                 f'ORDER_IN_PROGRESS={_order_qty} | '
                 f'DONE_QTY={done_qty} | '
@@ -275,21 +273,62 @@ def simulate_stream(cursor, event_dict: dict):
             logging.error('[# Other] Exception', exc_info=True)
 
 
-def get_partition_id(consumer, topic_name: str, machine_id: str) -> int:
+def kafka_murmur2(data: bytes):
+    """
+    Kafka 官方 Java 版 Murmur2 的 Python 實作
+    """
+    length = len(data)
+    seed = 0x9747b28c
+    # 'm' and 'r' are mixing constants generated offline.
+    # They're not so unique, so they don't have to be random.
+    m = 0x5bd1e995
+    r = 24
+
+    # Initialize the hash to a 'random' value
+    h = seed ^ length
+    length_4 = length // 4
+
+    for i in range(length_4):
+        i_4 = i * 4
+        k = struct.unpack('<I', data[i_4:i_4 + 4])[0]
+        k = (k * m) & 0xffffffff
+        k ^= (k >> r) & 0xffffffff
+        k = (k * m) & 0xffffffff
+        h = (h * m) & 0xffffffff
+        h ^= k
+
+    # Handle the last few bytes of the input array
+    extra_bytes = length % 4
+    if extra_bytes == 3:
+        h ^= (data[(length & ~3) + 2] << 16) & 0xffffffff
+    if extra_bytes >= 2:
+        h ^= (data[(length & ~3) + 1] << 8) & 0xffffffff
+    if extra_bytes >= 1:
+        h ^= (data[length & ~3]) & 0xffffffff
+        h = (h * m) & 0xffffffff
+
+    h ^= (h >> 13) & 0xffffffff
+    h = (h * m) & 0xffffffff
+    h ^= (h >> 15) & 0xffffffff
+
+    return h
+
+
+def get_partition_id(consumer, topic_name: str, topic_key: str) -> int:
     # 取得分區總數
     cluster_metadata = consumer.list_topics(topic=topic_name)
     partitions = cluster_metadata.topics[topic_name].partitions
     num_partitions = len(partitions)
 
     # 計算 Partition ID
-    key_bytes = machine_id.encode('utf-8')
-    target_partition = (mmh3.hash(key_bytes, seed=0x12345678) & 0x7fffffff) % num_partitions
+    # target_partition = (mmh3.hash(topic_key.encode('utf-8'), seed=0x12345678) & 0x7fffffff) % num_partitions
+    target_partition = (kafka_murmur2(topic_key.encode('utf-8')) & 0x7fffffff) % num_partitions
 
-    logging.info(f"機台 {machine_id} 對應 Partition 分區 ID 為: {target_partition}")
+    logging.info(f"機台 {TARGET_MACH} 對應 Partition 分區 ID 為: {target_partition}")
     return target_partition
 
 
-def receive_message(stop_event, **kwargs):
+def consumer_message(stop_event, **kwargs):
     _config = {
         'bootstrap.servers': f'{kafka['host']}:{kafka['port']}',
         'group.id': GROUP_ID,
@@ -298,7 +337,7 @@ def receive_message(stop_event, **kwargs):
     }
     consumer = Consumer(_config)
 
-    target_partition = get_partition_id(consumer, ORDER_TOPIC, TARGET_MACH)
+    target_partition = get_partition_id(consumer, ORDER_TOPIC, f"cp/mach-order/{TARGET_MACH}")
     tp = TopicPartition(ORDER_TOPIC, target_partition)
     consumer.assign([tp])
 
@@ -384,10 +423,15 @@ def main(target_mach: str):
     logging.warning(f'[{MAIN_NAME}] Starting Factory Stream Simulation ...')
 
     try:
-        start_service(threads, receive_message, **{
+        start_service(threads, consumer_message, **{
             'title': '「消費 mqtt_raw.cp.mach-order 訂單訊息」服務',
             'stop_event': stop_event,
         })
+
+        # start_service(threads, simulate_stream, **{
+        #     'title': '「傳送邊緣數據處理」服務',
+        #     'stop_event': stop_event,
+        # })
 
         while True:
             time.sleep(1)

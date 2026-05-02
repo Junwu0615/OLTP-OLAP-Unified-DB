@@ -1,8 +1,8 @@
 import os, sys, time, json, copy, logging, yaml
 import re, collections, operator, random, math
-import statistics, pathlib
+import statistics, pathlib, struct
 import psycopg2
-import mmh3
+# import mmh3
 import threading
 
 # from dotenv import load_dotenv
